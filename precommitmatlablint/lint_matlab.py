@@ -1,7 +1,10 @@
 import argparse
+import subprocess
+import sys
 from enum import IntEnum
 from pathlib import Path
-from typing import Optional, Sequence, List, Tuple
+from subprocess import run
+from typing import List, Optional, Sequence, Tuple
 
 
 class ReturnCode(IntEnum):
@@ -13,8 +16,23 @@ def validate_matlab_path(path: Path) -> bool:
     return path.exists() and path.is_file()
 
 
+def construct_matlab_script(filenames: List[Path]) -> str:
+    string_list = [f"'{str(f)}'" for f in filenames]
+
+    file_list_command = ", ".join(string_list)
+
+    return f"disp(jsonencode(checkcode('-struct', {file_list_command})));"
+
+
 def validate_matlab(matlab_path: Path, filenames: List[Path]) -> ReturnCode:
-    pass
+    command: List[str] = [str(matlab_path), "-nosplash"]
+
+    if "win32" == sys.platform:
+        command.append("-wait")
+
+    command.append("-batch", construct_matlab_script(filenames))
+
+    completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
 
 def find_matlab(
