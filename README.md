@@ -1,7 +1,7 @@
 # Pre-commit-matlab-lint
 
 [![Version status](https://img.shields.io/pypi/status/pre-commit-matlab-lint)](https://pypi.org/project/pre-commit-matlab-lint)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python version compatibility](https://img.shields.io/pypi/pyversions/pre-commit-matlab-lint)](https://pypi.org/project/pre-commit-matlab-lint)
 [![Version on Docker Hub](https://img.shields.io/docker/v/ty.cumby/pre-commit-matlab-lint?color=green&label=Docker%20Hub)](https://hub.docker.com/repository/docker/ty.cumby/pre-commit-matlab-lint)
 [![Version on GitHub](https://img.shields.io/github/v/release/ty.cumby/pre-commit-matlab-lint?include_prereleases&label=GitHub)](https://github.com/ty.cumby/pre-commit-matlab-lint/releases)
