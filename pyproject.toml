@@ -92,7 +92,7 @@ Download = "https://pypi.org/project/precommitmatlablint/"
 [tool.poetry.scripts]
 # TODO Is your code a script?
 # Set the name of the Python module followed by a colon, followed by the name of the function
-pre-commit-matlab-lint = "precommitmatlablint.cli:cli"
+lint-matlab = "precommitmatlablint.lint_matlab:main"
 
 [tool.poetry.dependencies]
 # TODO Add and remove dependencies here
