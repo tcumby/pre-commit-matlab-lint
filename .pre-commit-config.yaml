@@ -87,4 +87,4 @@ repos:
     hooks:
       - id: bandit
         exclude: ^test_*
-        args: [--skip, "B404", --skip, "B603"]
+        args: [--skip, "B404,B603"]
