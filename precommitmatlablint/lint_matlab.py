@@ -65,7 +65,6 @@ def find_matlab(
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("filenames", nargs="*", type=Path)
     parser.add_argument(
         "--matlab_path",
         action="store",
@@ -92,6 +91,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument(
         "--treat_warning_as_error", action="store_true", help="Treat all warnings as errors"
     )
+    parser.add_argument("filenames", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
     filenames: List[Path] = []
