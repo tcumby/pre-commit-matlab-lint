@@ -1,4 +1,6 @@
 import argparse
+import json
+import re
 import subprocess
 import sys
 from enum import IntEnum
@@ -16,23 +18,32 @@ def validate_matlab_path(path: Path) -> bool:
     return path.exists() and path.is_file()
 
 
-def construct_matlab_script(filenames: List[Path]) -> str:
+def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
     string_list = [f"'{str(f)}'" for f in filenames]
 
     file_list_command = ", ".join(string_list)
+    level_option = "-m0" if fail_warnings else "-m2"
 
-    return f"disp(jsonencode(checkcode('-struct', {file_list_command})));"
+    return f"disp(jsonencode(checkcode({level_option},'-struct',{file_list_command})));"
 
 
-def validate_matlab(matlab_path: Path, filenames: List[Path]) -> ReturnCode:
+def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: bool) -> ReturnCode:
     command: List[str] = [str(matlab_path), "-nosplash"]
 
     if "win32" == sys.platform:
         command.append("-wait")
 
-    command.append("-batch", construct_matlab_script(filenames))
+    command.append("-batch", construct_matlab_script(filenames, fail_warnings))
 
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
+
+    stdout: str = completed_process.stdout
+
+    match: re.Match = re.search(r"\{.*\}", stdout)
+    if match:
+        json_string: str = match.group(0)
+
+        linter_results = json.loads(json_string)
 
 
 def find_matlab(
@@ -78,6 +89,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default="",
         help="The release name of MATLAB to use.",
     )
+    parser.add_argument(
+        "--treat_warning_as_error", action="store_true", help="Treat all warnings as errors"
+    )
     args = parser.parse_args(argv)
 
     filenames: List[Path] = []
@@ -96,6 +110,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if len(args.matlab_release_name) > 0:
         matlab_release_name = args.matlab_release_name
 
+    fail_warnings: bool = args.treat_warning_as_error
     matlab_path, return_code = find_matlab(
         potential_matlab_path=potential_matlab_path,
         matlab_version=matlab_version,
@@ -105,7 +120,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if ReturnCode.FAIL == return_code:
         return return_code
     else:
-        return validate_matlab(matlab_path, filenames)
+        return validate_matlab(matlab_path, filenames, fail_warnings)
 
 
 if __name__ == "__main__":
