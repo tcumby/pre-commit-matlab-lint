@@ -1,26 +1,45 @@
-# Pre-commit-matlab-lint
+# pre-commit-matlab-lint
 
-[![Version status](https://img.shields.io/pypi/status/pre-commit-matlab-lint)](https://pypi.org/project/pre-commit-matlab-lint)
+[comment]: <> ([![Version status]&#40;https://img.shields.io/pypi/status/pre-commit-matlab-lint&#41;]&#40;https://pypi.org/project/pre-commit-matlab-lint&#41;)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python version compatibility](https://img.shields.io/pypi/pyversions/pre-commit-matlab-lint)](https://pypi.org/project/pre-commit-matlab-lint)
-[![Version on Docker Hub](https://img.shields.io/docker/v/ty.cumby/pre-commit-matlab-lint?color=green&label=Docker%20Hub)](https://hub.docker.com/repository/docker/ty.cumby/pre-commit-matlab-lint)
+[![](https://img.shields.io/badge/python-3.8%2B-blue)]()
 [![Version on GitHub](https://img.shields.io/github/v/release/ty.cumby/pre-commit-matlab-lint?include_prereleases&label=GitHub)](https://github.com/ty.cumby/pre-commit-matlab-lint/releases)
-[![Version on PyPi](https://img.shields.io/pypi/v/precommitmatlablint)](https://pypi.org/project/precommitmatlablint)
-[![Version on Conda-Forge](https://img.shields.io/conda/vn/conda-forge/pre-commit-matlab-lint?label=Conda-Forge)](https://anaconda.org/conda-forge/pre-commit-matlab-lint)
 [![Documentation status](https://readthedocs.org/projects/pre-commit-matlab-lint/badge)](https://pre-commit-matlab-lint.readthedocs.io/en/stable)
-[![Build (GitHub Actions)](https://img.shields.io/github/workflow/status/ty.cumby/pre-commit-matlab-lint/Build%20&%20test?label=Build%20&%20test)](https://github.com/ty.cumby/pre-commit-matlab-lint/actions)
-[![Build (Travis)](https://img.shields.io/travis/ty.cumby/pre-commit-matlab-lint?label=Travis)](https://travis-ci.com/ty.cumby/pre-commit-matlab-lint)
-[![Build (Azure)](https://img.shields.io/azure-devops/build/ty.cumby/<<key>>/<<defid>>?label=Azure)](https://dev.azure.com/ty.cumby/pre-commit-matlab-lint/_build?definitionId=1&_a=summary)
-[![Build (Scrutinizer)](https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/badges/build.png?b=main)](https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/build-status/main)
-[![Test coverage (coveralls)](https://coveralls.io/repos/github/ty.cumby/pre-commit-matlab-lint/badge.svg?branch=main&service=github)](https://coveralls.io/github/ty.cumby/pre-commit-matlab-lint?branch=main)
-[![Test coverage (codecov)](https://codecov.io/github/ty.cumby/pre-commit-matlab-lint/coverage.svg)](https://codecov.io/gh/ty.cumby/pre-commit-matlab-lint)
-[![Test coverage (Scrutinizer)](https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/?branch=main)
-[![Maintainability (Code Climate)](https://api.codeclimate.com/v1/badges/<<apikey>>/maintainability)](https://codeclimate.com/github/ty.cumby/pre-commit-matlab-lint/maintainability)
 [![CodeFactor](https://www.codefactor.io/repository/github/dmyersturnbull/tyrannosaurus/badge)](https://www.codefactor.io/repository/github/dmyersturnbull/tyrannosaurus)
-[![Code Quality (Scrutinizer)](https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/?branch=main)
 [![Created with Tyrannosaurus](https://img.shields.io/badge/Created_with-Tyrannosaurus-0000ff.svg)](https://github.com/dmyersturnbull/tyrannosaurus)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Security Status](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A python project.
+[comment]: <> ([![Python version compatibility]&#40;https://img.shields.io/pypi/pyversions/pre-commit-matlab-lint&#41;]&#40;https://pypi.org/project/pre-commit-matlab-lint&#41;)
+
+[comment]: <> ([![Version on Docker Hub]&#40;https://img.shields.io/docker/v/ty.cumby/pre-commit-matlab-lint?color=green&label=Docker%20Hub&#41;]&#40;https://hub.docker.com/repository/docker/ty.cumby/pre-commit-matlab-lint&#41;)
+
+[comment]: <> ([![Version on PyPi]&#40;https://img.shields.io/pypi/v/precommitmatlablint&#41;]&#40;https://pypi.org/project/precommitmatlablint&#41;)
+
+[comment]: <> ([![Version on Conda-Forge]&#40;https://img.shields.io/conda/vn/conda-forge/pre-commit-matlab-lint?label=Conda-Forge&#41;]&#40;https://anaconda.org/conda-forge/pre-commit-matlab-lint&#41;)
+
+[comment]: <> ([![Build (GitHub Actions)]&#40;https://img.shields.io/github/workflow/status/ty.cumby/pre-commit-matlab-lint/Build%20&%20test?label=Build%20&%20test&#41;]&#40;https://github.com/ty.cumby/pre-commit-matlab-lint/actions&#41;)
+[comment]: <> ([![Build (Travis)]&#40;https://img.shields.io/travis/ty.cumby/pre-commit-matlab-lint?label=Travis&#41;]&#40;https://travis-ci.com/ty.cumby/pre-commit-matlab-lint&#41;)
+
+[comment]: <> ([![Build (Azure)]&#40;https://img.shields.io/azure-devops/build/ty.cumby/<<key>>/<<defid>>?label=Azure&#41;]&#40;https://dev.azure.com/ty.cumby/pre-commit-matlab-lint/_build?definitionId=1&_a=summary&#41;)
+
+[comment]: <> ([![Build (Scrutinizer)]&#40;https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/badges/build.png?b=main&#41;]&#40;https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/build-status/main&#41;)
+
+[comment]: <> ([![Test coverage (coveralls)]&#40;https://coveralls.io/repos/github/ty.cumby/pre-commit-matlab-lint/badge.svg?branch=main&service=github&#41;]&#40;https://coveralls.io/github/ty.cumby/pre-commit-matlab-lint?branch=main&#41;)
+
+[comment]: <> ([![Test coverage (codecov)]&#40;https://codecov.io/github/ty.cumby/pre-commit-matlab-lint/coverage.svg&#41;]&#40;https://codecov.io/gh/ty.cumby/pre-commit-matlab-lint&#41;)
+
+[comment]: <> ([![Test coverage (Scrutinizer)]&#40;https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/badges/coverage.png?b=main&#41;]&#40;https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/?branch=main&#41;)
+
+[comment]: <> ([![Maintainability (Code Climate)]&#40;https://api.codeclimate.com/v1/badges/<<apikey>>/maintainability&#41;]&#40;https://codeclimate.com/github/ty.cumby/pre-commit-matlab-lint/maintainability&#41;)
+
+[comment]: <> ([![Code Quality (Scrutinizer)]&#40;https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/badges/quality-score.png?b=main&#41;]&#40;https://scrutinizer-ci.com/g/ty.cumby/pre-commit-matlab-lint/?branch=main&#41;)
+A pre-commit hook for validating MATLAB code.
+
+## Available Hook
+
+### lint-matlab
 
 And it’s further described in this paragraph.
 [See the docs 📚](https://pre-commit-matlab-lint.readthedocs.io/en/stable/) for more info.
