@@ -9,15 +9,6 @@ from subprocess import run
 from typing import List, Optional, Sequence, Tuple
 
 
-class ReturnCode(IntEnum):
-    OK = 0
-    FAIL = 1
-
-
-def validate_matlab_path(path: Path) -> bool:
-    return path.exists() and path.is_file()
-
-
 def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
     string_list = [f"'{str(f)}'" for f in filenames]
 
@@ -44,23 +35,6 @@ def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: boo
         json_string: str = match.group(0)
 
         linter_results = json.loads(json_string)
-
-
-def find_matlab(
-    potential_matlab_path: Optional[Path],
-    matlab_version: Optional[str],
-    matlab_release_name: Optional[str],
-) -> Tuple[Path, ReturnCode]:
-    return_code: ReturnCode = ReturnCode.FAIL
-    matlab_path: Path
-
-    if potential_matlab_path is not None and validate_matlab_path(potential_matlab_path):
-        return_code = ReturnCode.OK
-        matlab_path = potential_matlab_path
-    else:
-        pass
-
-    return matlab_path, return_code
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
