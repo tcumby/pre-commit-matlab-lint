@@ -1,12 +1,10 @@
 import argparse
 import json
-import re
 import subprocess
 import sys
-from enum import IntEnum
 from pathlib import Path
 from subprocess import run
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.return_code import ReturnCode
@@ -122,7 +120,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         matlab_release_name=matlab_release_name,
     )
 
-    if ReturnCode.FAIL == return_code:
+    if ReturnCode.FAIL == return_code or matlab_path is None or not matlab_path.exists():
         print("Unable to find MATLAB")
         return return_code
     else:
