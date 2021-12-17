@@ -6,7 +6,10 @@ import sys
 from enum import IntEnum
 from pathlib import Path
 from subprocess import run
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+
+from precommitmatlablint.find_matlab import find_matlab
+from precommitmatlablint.return_code import ReturnCode
 
 
 def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
@@ -15,26 +18,54 @@ def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
     file_list_command = ", ".join(string_list)
     level_option = "-m0" if fail_warnings else "-m2"
 
-    return f"disp(jsonencode(checkcode({level_option},'-struct',{file_list_command})));"
+    return f"clc;disp(jsonencode(checkcode({level_option},'-struct',{file_list_command})));"
 
 
 def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: bool) -> ReturnCode:
     command: List[str] = [str(matlab_path), "-nosplash"]
 
+    return_code = ReturnCode.OK
+
     if "win32" == sys.platform:
         command.append("-wait")
 
-    command.append("-batch", construct_matlab_script(filenames, fail_warnings))
+    command.append("-batch")
+    command.append(construct_matlab_script(filenames, fail_warnings))
 
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
-    stdout: str = completed_process.stdout
+    try:
+        linter_results: Union[Dict[str, Any], List[Dict[str, Any]]] = json.loads(
+            completed_process.stdout
+        )
+        if len(filenames) == 1:
+            this_file = filenames[0]
+            this_linter_result = linter_results
+            if len(this_linter_result) > 0:
+                return_code = ReturnCode.FAIL
+                print_linter_result(this_file, this_linter_result)
 
-    match: re.Match = re.search(r"\{.*\}", stdout)
-    if match:
-        json_string: str = match.group(0)
+        elif len(filenames) > 1:
+            for index, this_file in enumerate(filenames):
+                this_linter_result = linter_results[index]
+                if len(this_linter_result) > 0:
+                    return_code = ReturnCode.FAIL
+                    print_linter_result(this_file, this_linter_result)
 
-        linter_results = json.loads(json_string)
+    except json.JSONDecodeError as err:
+        return_code = ReturnCode.FAIL
+        print(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
+
+    return return_code
+
+
+def print_linter_result(this_file, this_linter_result):
+    print(f"checkcode found issues in {this_file}:")
+    for issue in this_linter_result:
+        line_number: int = issue["line"]
+        column_range: List[int] = issue["column"]
+        message: str = issue["message"]
+        print(f"\tLine {line_number} (Column [{column_range[0]}-{column_range[1]}]): {message}")
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -92,6 +123,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     if ReturnCode.FAIL == return_code:
+        print("Unable to find MATLAB")
         return return_code
     else:
         return validate_matlab(matlab_path, filenames, fail_warnings)
