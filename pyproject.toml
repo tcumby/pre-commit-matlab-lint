@@ -39,8 +39,8 @@ version = "0.1.0"
 # TODO: Set the description and keywords here
 description = "A Python project"
 keywords = [""]
-authors = ["T", "y", " ", "C", "u", "m", "b", "y"]
-maintainers = ["T", "y", " ", "C", "u", "m", "b", "y"]
+authors = ["Ty Cumby"]
+maintainers = ["Ty Cumby"]
 # This must be an identifier listed in https://spdx.org/licenses/
 license = "MIT"
 readme = "README.md"
