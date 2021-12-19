@@ -57,11 +57,6 @@ repos:
       - id: dockerfile_lint
     repo: https://github.com/Lucas-C/pre-commit-hooks-nodejs
     rev: v1.1.1
-  - repo: https://github.com/pycqa/isort
-    rev: 5.8.0
-    hooks:
-      - id: isort
-        name: isort (python)
   # make sure to run black *after* isort
   - hooks:
       - id: black
