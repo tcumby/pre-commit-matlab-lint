@@ -4,14 +4,14 @@ Metadata for this pre-commit-matlab-lint.
 
 """
 import logging
-from typing import Sequence
 
 # If you need to support Python 3.7, change to importlib_metadata (underscore, not dot)
 # and then list importlib_metadata to [tool.poetry.dependencies] and docs/requirements.txt
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import metadata as __load
+from os import PathLike
 from pathlib import Path
-
+from typing import Union
 
 pkg = Path(__file__).absolute().parent.name
 logger = logging.getLogger(pkg)
@@ -37,8 +37,9 @@ class PrecommitmatlablintAssets:
     """
     Utilities and resources for ${Project}.
     """
+
     @classmethod
-    def path(cls, *nodes: Sequence[str]) -> Path:
+    def path(cls, *nodes: Union[str, PathLike[str]]) -> Path:
         """
         Gets the ``Path`` of an asset under ``resources``.
 
@@ -51,9 +52,11 @@ class PrecommitmatlablintAssets:
         Raises:
             FileNotFoundError: If the path does not exist
         """
-        path = Path(__file__.parent, "resources", *nodes)
+        path = Path(Path(__file__).parent, "resources", *nodes)
         if not path.exists():
             raise FileNotFoundError(f"Asset {path} not found")
+
+        return path
 
 
 if __name__ == "__main__":  # pragma: no cover
