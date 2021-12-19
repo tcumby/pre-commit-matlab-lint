@@ -3,6 +3,6 @@
   description: This hook validates MATLAB files using a MATLAB instance.
   entry: lint-matlab
   language: python
-  file: '\.m$'
+  files: '\.m$'
   types: [text]
   require_serial: false
