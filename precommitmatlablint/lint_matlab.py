@@ -33,17 +33,17 @@ def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: boo
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
     try:
-        linter_results: Union[Dict[str, Any], List[Dict[str, Any]]] = json.loads(
-            completed_process.stdout
-        )
+
         if len(filenames) == 1:
             this_file = filenames[0]
+            linter_results: Dict[str, Any] = json.loads(completed_process.stdout)
             this_linter_result = linter_results
             if len(this_linter_result) > 0:
                 return_code = ReturnCode.FAIL
                 print_linter_result(this_file, this_linter_result)
 
         elif len(filenames) > 1:
+            linter_results: List[Dict[str, Any]] = json.loads(completed_process.stdout)
             for index, this_file in enumerate(filenames):
                 this_linter_result = linter_results[index]
                 if len(this_linter_result) > 0:
