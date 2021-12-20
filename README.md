@@ -15,6 +15,18 @@ A pre-commit hook for validating MATLAB code.
 
 ### lint-matlab
 
+Validate MATLAB files by analyzing them with MATLAB's checkcode function.
+
+In order to use this hook, MATLAB must be installed and registered. There are three ways to specify which MATLAB instance should be used:
+
+- Use `--matlab_path PATH` to supply the full path to a MATLAB executable
+- Use `--matlab_version VERSION` to specify a MATLAB version to locate (e.g. "9.10")
+- Use `--matlab_release_name NAME` to specify a MATLAB release to locate (e.g. "R2021a")
+
+Other options:
+
+- Use `--treat_warning_as_error` to fail on linter warnings, in addition to linter errors.
+
 Licensed under the terms of the [MIT License](https://spdx.org/licenses/MIT.html).
 [New issues](https://github.com/tcumby/pre-commit-matlab-lint/issues) and pull requests are welcome.
 Please refer to the [contributing guide](https://github.com/tcumby/pre-commit-matlab-lint/blob/main/CONTRIBUTING.md)
