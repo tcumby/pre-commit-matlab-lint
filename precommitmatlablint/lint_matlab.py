@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 from subprocess import run
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence
 
 from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.return_code import ReturnCode
@@ -43,9 +43,9 @@ def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: boo
                 print_linter_result(this_file, this_linter_result)
 
         elif len(filenames) > 1:
-            linter_results: List[Dict[str, Any]] = json.loads(completed_process.stdout)
+            linter_results_list: List[Dict[str, Any]] = json.loads(completed_process.stdout)
             for index, this_file in enumerate(filenames):
-                this_linter_result = linter_results[index]
+                this_linter_result = linter_results_list[index]
                 if len(this_linter_result) > 0:
                     return_code = ReturnCode.FAIL
                     print_linter_result(this_file, this_linter_result)

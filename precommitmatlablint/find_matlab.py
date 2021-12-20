@@ -9,7 +9,7 @@ from precommitmatlablint.return_code import ReturnCode
 
 def get_matlab_installs() -> List[Path]:
     this_platform = sys.platform
-    install_root_paths = []
+    install_root_paths: List[Path]
     if "win32" == this_platform:
         program_files: str = os.getenv("PROGRAMFILES", "C:\\Program Files")
         root_path = Path(program_files, "MATLAB")
@@ -34,8 +34,9 @@ def validate_matlab_path(path: Path) -> bool:
 def find_matlab_release(release: str, search_path: List[Path]) -> Optional[Path]:
     matlab_path: Optional[Path] = None
 
-    # The MATLAB folder path contains the release name in the root folder, e.g C:/Program Files/MATLAB/R2021a on Windows,
-    # /Applications/MATLAB_R2021a.app on macOS, /usr/local/MATLAB/R2021a on Linux
+    # The MATLAB folder path contains the release name in the root folder,
+    # e.g C:/Program Files/MATLAB/R2021a on Windows, /Applications/MATLAB_R2021a.app on macOS, /usr/local/MATLAB/R2021a
+    # on Linux
     matches = [p for p in search_path if release in str(p)]
 
     if len(matches) > 0:
@@ -57,7 +58,6 @@ def get_matlab_exe_name() -> str:
 
 
 def query_matlab_version(matlab_exe_path: Path) -> str:
-    matlab_bin_path: Path = matlab_exe_path.parent
     matlab_command: str = "disp(version);quit"
     version_string: str = ""
     command: List[str] = [str(matlab_exe_path), "-nosplash", "-nodesktop"]
@@ -69,10 +69,11 @@ def query_matlab_version(matlab_exe_path: Path) -> str:
     try:
         completed_process = subprocess.run(command, text=True, capture_output=True)
         completed_process.check_returncode()
-        # With this command, stdout will contain <major>.<minor>.<point>.<patch> (R<release>), e.g. 9.10.0.1602886 (R2021a)
+        # With this command, stdout will contain <major>.<minor>.<point>.<patch> (R<release>),
+        # e.g. 9.10.0.1602886 (R2021a)
         version_string = completed_process.stdout
     except subprocess.SubprocessError as err:
-        pass
+        print(f"Failed to query MATLAB version: {str(err)}")
 
     return version_string
 
