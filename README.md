@@ -9,23 +9,35 @@
 [![Security Status](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A pre-commit hook for validating MATLAB code.
+A [pre-commit hook](https://pre-commit.com/) for validating MATLAB code.
 
 ## Available Hook
 
 ### lint-matlab
 
-Validate MATLAB files by analyzing them with MATLAB's checkcode function.
+Validate MATLAB files by analyzing them with MATLAB's [checkcode](https://www.mathworks.com/help/matlab/ref/checkcode.html) function.
 
 In order to use this hook, MATLAB must be installed and registered. There are three ways to specify which MATLAB instance should be used:
 
-- Use `--matlab_path PATH` to supply the full path to a MATLAB executable
-- Use `--matlab_version VERSION` to specify a MATLAB version to locate (e.g. "9.10")
-- Use `--matlab_release_name NAME` to specify a MATLAB release to locate (e.g. "R2021a")
+- Use `--matlab_path=PATH` to supply the full path to a MATLAB executable
+- Use `--matlab_version=VERSION` to specify a MATLAB version to locate (e.g. "9.10")
+- Use `--matlab_release_name=NAME` to specify a MATLAB release to locate (e.g. "R2021a")
 
 Other options:
 
 - Use `--treat_warning_as_error` to fail on linter warnings, in addition to linter errors.
+
+## Usage with pre-commit
+
+Add this to your `.pre-commit-config.yaml`
+
+```yaml
+- repo: https://github.com/tcumby/pre-commit-matlab-lint
+  rev: "" # Use the sha / tag you want to point at
+  hooks:
+    - id: lint-matlab
+      args: ["--matlab_release_name=R2021a"]
+```
 
 Licensed under the terms of the [MIT License](https://spdx.org/licenses/MIT.html).
 [New issues](https://github.com/tcumby/pre-commit-matlab-lint/issues) and pull requests are welcome.
