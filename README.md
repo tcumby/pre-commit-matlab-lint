@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![](https://img.shields.io/badge/python-3.8%2B-blue)]()
-[![Version on GitHub](https://img.shields.io/github/v/release/tcumby/pre-commit-matlab-lint?include_prereleases&label=GitHub)](https://github.com/ty.cumby/pre-commit-matlab-lint/releases)
+[![Version on GitHub](https://img.shields.io/github/v/release/tcumby/pre-commit-matlab-lint?include_prereleases&label=GitHub)](https://github.com/tcumby/pre-commit-matlab-lint/releases)
 [![Documentation status](https://readthedocs.org/projects/pre-commit-matlab-lint/badge)](https://pre-commit-matlab-lint.readthedocs.io/en/stable)
 [![CodeFactor](https://www.codefactor.io/repository/github/dmyersturnbull/tyrannosaurus/badge)](https://www.codefactor.io/repository/github/dmyersturnbull/tyrannosaurus)
 [![Created with Tyrannosaurus](https://img.shields.io/badge/Created_with-Tyrannosaurus-0000ff.svg)](https://github.com/dmyersturnbull/tyrannosaurus)
