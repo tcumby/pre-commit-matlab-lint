@@ -11,6 +11,20 @@ from precommitmatlablint.return_code import ReturnCode
 
 
 def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
+    """Return the inline MATLAB script to run on the MATLAB instance.
+
+    Parameters
+    ----------
+
+    filenames: list of Path
+                            List of all filepaths to validate through MATLAB's checkcode function
+    fail_warnings: bool
+                            Whether to treat warnings as errors
+    Returns
+    -------
+    str
+        The MATLAB script to run on the MATLAB instance
+    """
     string_list = [f"'{str(f)}'" for f in filenames]
 
     file_list_command = ", ".join(string_list)
@@ -20,13 +34,26 @@ def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
 
 
 def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: bool) -> ReturnCode:
-    command: List[str] = [str(matlab_path), "-nosplash"]
+    """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
+    Parameters
+    ----------
+    matlab_path: Path
+                            The absolute path to the MATLAB executable
+    filenames: list of Path
+                            The list of m-file file paths
+    fail_warnings: bool
+                            Whether to treat warnings as errors
+
+    Returns
+    -------
+    ReturnCode
+    """
     return_code = ReturnCode.OK
 
+    command: List[str] = [str(matlab_path)]
     if "win32" == sys.platform:
         command.append("-wait")
-
     command.append("-batch")
     command.append(construct_matlab_script(filenames, fail_warnings))
 
@@ -58,6 +85,7 @@ def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: boo
 
 
 def print_linter_result(this_file, this_linter_result):
+    """Print any discovered issues."""
     print(f"checkcode found issues in {this_file}:")
     for issue in this_linter_result:
         line_number: int = issue["line"]
@@ -67,6 +95,7 @@ def print_linter_result(this_file, this_linter_result):
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    """Parse commandline arguments and validate the supplied files through MATLAB's checkcode function."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--matlab_path",
