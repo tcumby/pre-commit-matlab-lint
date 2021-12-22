@@ -60,22 +60,18 @@ def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: boo
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
     try:
-
         if len(filepaths) == 1:
             this_file = filepaths[0]
-            linter_results: Dict[str, Any] = json.loads(completed_process.stdout)
-            this_linter_result = linter_results
-            if len(this_linter_result) > 0:
-                return_code = ReturnCode.FAIL
-                print_linter_result(this_file, this_linter_result)
+            linter_results: List[Dict[str, Any]] = json.loads(completed_process.stdout)
+            return_code = inspect_linter_result(linter_results)
+            print_linter_result(this_file, linter_results)
 
         elif len(filepaths) > 1:
-            linter_results_list: List[Dict[str, Any]] = json.loads(completed_process.stdout)
+            linter_results_list: List[List[Dict[str, Any]]] = json.loads(completed_process.stdout)
             for index, this_file in enumerate(filepaths):
-                this_linter_result = linter_results_list[index]
-                if len(this_linter_result) > 0:
-                    return_code = ReturnCode.FAIL
-                    print_linter_result(this_file, this_linter_result)
+                this_linter_results = linter_results_list[index]
+                return_code = inspect_linter_result(this_linter_results)
+                print_linter_result(this_file, this_linter_results)
 
     except json.JSONDecodeError as err:
         return_code = ReturnCode.FAIL
@@ -84,14 +80,42 @@ def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: boo
     return return_code
 
 
-def print_linter_result(this_file, this_linter_result):
+def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
+    """Inspect a given linter result to determine if it indicates a failure.
+    Parameters
+    ----------
+    linter_results: list of dict
+                                 The list of linter result dictionaries
+    Returns
+    -------
+    ReturnCode
+    """
+    return_code: ReturnCode = ReturnCode.OK
+
+    # Let's not fail if any of the linter McCabe cyclomaticity ID's are present.
+    allowed_ids = ["CABE", "MCABE"]
+    return_codes: List[ReturnCode] = []
+    if len(linter_results) > 0:
+        for result in linter_results:
+            this_return_code = ReturnCode.FAIL if result["id"] not in allowed_ids else ReturnCode.OK
+            return_codes.append(this_return_code)
+
+        return_code = (
+            ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
+        )
+
+    return return_code
+
+
+def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
     """Print any discovered issues."""
-    print(f"checkcode found issues in {this_file}:")
-    for issue in this_linter_result:
-        line_number: int = issue["line"]
-        column_range: List[int] = issue["column"]
-        message: str = issue["message"]
-        print(f"\tLine {line_number} (Column [{column_range[0]}-{column_range[1]}]): {message}")
+    if len(linter_result) > 0:
+        print(f"checkcode found issues in {filepath}:")
+        for issue in linter_result:
+            line_number: int = issue["line"]
+            column_range: List[int] = issue["column"]
+            message: str = issue["message"]
+            print(f"\tLine {line_number} (Column [{column_range[0]}-{column_range[1]}]): {message}")
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
