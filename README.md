@@ -26,6 +26,8 @@ In order to use this hook, MATLAB must be installed and registered. There are th
 Other options:
 
 - Use `--treat_warning_as_error` to fail on linter warnings, in addition to linter errors.
+- Use `--enable_cyclomaticity` to enable McCabe cyclomaticity complexity calculation display for each file.
+- Use `--enable_modified_cyclomaticity` to enable modified cyclomaticity complexity calculation display for each file.
 
 ## Usage with pre-commit
 

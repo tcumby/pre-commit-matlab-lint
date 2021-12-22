@@ -10,30 +10,50 @@ from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.return_code import ReturnCode
 
 
-def construct_matlab_script(filepaths: List[Path], fail_warnings: bool) -> str:
+def construct_matlab_script(
+    filepaths: List[Path], fail_warnings: bool, enable_cyc: bool, enable_mod_cyc: bool
+) -> str:
     """Return the inline MATLAB script to run on the MATLAB instance.
 
     Parameters
     ----------
 
+
     filepaths: list of Path
                             List of all filepaths to validate through MATLAB's checkcode function
     fail_warnings: bool
                             Whether to treat warnings as errors
+    enable_mod_cyc: bool
+                            Enable display of modified cyclomaticity complexity calculations for each file.
+    enable_cyc: bool
+                            Enable display of McCabe cyclomaticity camplexity calculations for each file.
     Returns
     -------
     str
         The MATLAB script to run on the MATLAB instance
     """
-    string_list = [f"'{str(f)}'" for f in filepaths]
+    file_list = [f"'{str(f)}'" for f in filepaths]
 
-    file_list_command = ", ".join(string_list)
     level_option = "-m0" if fail_warnings else "-m2"
+    command: List = [level_option, "-id", "-struct"]
+    if enable_cyc:
+        command.append("-cyc")
 
-    return f"clc;disp(jsonencode(checkcode({level_option},'-id','-struct',{file_list_command})));"
+    if enable_mod_cyc:
+        command.append("-modcyc")
+
+    command = command + file_list
+    command_string: str = ", ".join(command)
+    return f"clc;disp(jsonencode(checkcode({command_string})));"
 
 
-def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: bool) -> ReturnCode:
+def validate_matlab(
+    matlab_path: Path,
+    filepaths: List[Path],
+    fail_warnings: bool,
+    enable_cyc: bool,
+    enable_mod_cyc: bool,
+) -> ReturnCode:
     """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
     Parameters
@@ -44,6 +64,10 @@ def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: boo
                             The list of m-file file paths
     fail_warnings: bool
                             Whether to treat warnings as errors
+    enable_mod_cyc: bool
+                            Enable display of modified cyclomaticity complexity calculations for each file.
+    enable_cyc: bool
+                            Enable display of McCabe cyclomaticity camplexity calculations for each file.
 
     Returns
     -------
@@ -55,7 +79,7 @@ def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: boo
     if "win32" == sys.platform:
         command.append("-wait")
     command.append("-batch")
-    command.append(construct_matlab_script(filepaths, fail_warnings))
+    command.append(construct_matlab_script(filepaths, fail_warnings, enable_cyc, enable_mod_cyc))
 
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
@@ -147,6 +171,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument(
         "--treat_warning_as_error", action="store_true", help="Treat all warnings as errors"
     )
+
+    parser.add_argument(
+        "--enable_modified_cyclomaticity",
+        action="store_true",
+        help="Enable the display of modified cyclomaticity complexity calculation for each file.",
+    )
+    parser.add_argument(
+        "--enable_cyclomaticity",
+        action="store_true",
+        help="Enable the display of McCabe cyclomaticity calculation complexity.",
+    )
     parser.add_argument("filepaths", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
@@ -166,6 +201,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if len(args.matlab_release_name) > 0:
         matlab_release_name = args.matlab_release_name
 
+    enable_mod_cyc: bool = args.enable_modified_cyclomaticity
+    enable_cyc: bool = args.enable_cyclomaticity
     fail_warnings: bool = args.treat_warning_as_error
     matlab_path, return_code = find_matlab(
         potential_matlab_path=potential_matlab_path,
@@ -177,7 +214,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("Unable to find MATLAB")
         return return_code
     else:
-        return validate_matlab(matlab_path, filepaths, fail_warnings)
+        return validate_matlab(matlab_path, filepaths, fail_warnings, enable_cyc, enable_mod_cyc)
 
 
 if __name__ == "__main__":
