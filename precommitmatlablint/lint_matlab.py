@@ -11,7 +11,11 @@ from precommitmatlablint.return_code import ReturnCode
 
 
 def construct_matlab_script(
-    filepaths: List[Path], fail_warnings: bool, enable_cyc: bool, enable_mod_cyc: bool
+    filepaths: List[Path],
+    fail_warnings: bool,
+    enable_cyc: bool,
+    enable_mod_cyc: bool,
+    ignore_ok_pragmas: bool,
 ) -> str:
     """Return the inline MATLAB script to run on the MATLAB instance.
 
@@ -27,6 +31,8 @@ def construct_matlab_script(
                             Enable display of modified cyclomaticity complexity calculations for each file.
     enable_cyc: bool
                             Enable display of McCabe cyclomaticity camplexity calculations for each file.
+    ignore_ok_pragmas: bool
+                            Ignore %#ok checkcode suppression pragmas
     Returns
     -------
     str
@@ -42,6 +48,9 @@ def construct_matlab_script(
     if enable_mod_cyc:
         command.append("-modcyc")
 
+    if ignore_ok_pragmas:
+        command.append("-notok")
+
     command = command + file_list
     command_string: str = ", ".join(command)
     return f"clc;disp(jsonencode(checkcode({command_string})));"
@@ -53,6 +62,7 @@ def validate_matlab(
     fail_warnings: bool,
     enable_cyc: bool,
     enable_mod_cyc: bool,
+    ignore_ok_pragmas: bool,
 ) -> ReturnCode:
     """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
@@ -68,7 +78,8 @@ def validate_matlab(
                             Enable display of modified cyclomaticity complexity calculations for each file.
     enable_cyc: bool
                             Enable display of McCabe cyclomaticity camplexity calculations for each file.
-
+    ignore_ok_pragmas: bool
+                            Ignore %#ok checkcode suppression pragmas
     Returns
     -------
     ReturnCode
@@ -79,7 +90,11 @@ def validate_matlab(
     if "win32" == sys.platform:
         command.append("-wait")
     command.append("-batch")
-    command.append(construct_matlab_script(filepaths, fail_warnings, enable_cyc, enable_mod_cyc))
+    command.append(
+        construct_matlab_script(
+            filepaths, fail_warnings, enable_cyc, enable_mod_cyc, ignore_ok_pragmas
+        )
+    )
 
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
@@ -182,6 +197,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
+    parser.add_argument(
+        "--ignore_ok_pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas"
+    )
     parser.add_argument("filepaths", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
@@ -203,6 +221,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     enable_mod_cyc: bool = args.enable_modified_cyclomaticity
     enable_cyc: bool = args.enable_cyclomaticity
+    ignore_ok_pragmas: bool = args.ignore_ok_pragmas
     fail_warnings: bool = args.treat_warning_as_error
     matlab_path, return_code = find_matlab(
         potential_matlab_path=potential_matlab_path,
@@ -214,7 +233,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("Unable to find MATLAB")
         return return_code
     else:
-        return validate_matlab(matlab_path, filepaths, fail_warnings, enable_cyc, enable_mod_cyc)
+        return validate_matlab(
+            matlab_path, filepaths, fail_warnings, enable_cyc, enable_mod_cyc, ignore_ok_pragmas
+        )
 
 
 if __name__ == "__main__":
