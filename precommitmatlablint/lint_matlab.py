@@ -30,7 +30,7 @@ def construct_matlab_script(filepaths: List[Path], fail_warnings: bool) -> str:
     file_list_command = ", ".join(string_list)
     level_option = "-m0" if fail_warnings else "-m2"
 
-    return f"clc;disp(jsonencode(checkcode({level_option},'-struct',{file_list_command})));"
+    return f"clc;disp(jsonencode(checkcode({level_option},'-id','-struct',{file_list_command})));"
 
 
 def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: bool) -> ReturnCode:
