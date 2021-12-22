@@ -10,13 +10,13 @@ from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.return_code import ReturnCode
 
 
-def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
+def construct_matlab_script(filepaths: List[Path], fail_warnings: bool) -> str:
     """Return the inline MATLAB script to run on the MATLAB instance.
 
     Parameters
     ----------
 
-    filenames: list of Path
+    filepaths: list of Path
                             List of all filepaths to validate through MATLAB's checkcode function
     fail_warnings: bool
                             Whether to treat warnings as errors
@@ -25,7 +25,7 @@ def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
     str
         The MATLAB script to run on the MATLAB instance
     """
-    string_list = [f"'{str(f)}'" for f in filenames]
+    string_list = [f"'{str(f)}'" for f in filepaths]
 
     file_list_command = ", ".join(string_list)
     level_option = "-m0" if fail_warnings else "-m2"
@@ -33,14 +33,14 @@ def construct_matlab_script(filenames: List[Path], fail_warnings: bool) -> str:
     return f"clc;disp(jsonencode(checkcode({level_option},'-struct',{file_list_command})));"
 
 
-def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: bool) -> ReturnCode:
+def validate_matlab(matlab_path: Path, filepaths: List[Path], fail_warnings: bool) -> ReturnCode:
     """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
     Parameters
     ----------
     matlab_path: Path
                             The absolute path to the MATLAB executable
-    filenames: list of Path
+    filepaths: list of Path
                             The list of m-file file paths
     fail_warnings: bool
                             Whether to treat warnings as errors
@@ -55,23 +55,23 @@ def validate_matlab(matlab_path: Path, filenames: List[Path], fail_warnings: boo
     if "win32" == sys.platform:
         command.append("-wait")
     command.append("-batch")
-    command.append(construct_matlab_script(filenames, fail_warnings))
+    command.append(construct_matlab_script(filepaths, fail_warnings))
 
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
     try:
 
-        if len(filenames) == 1:
-            this_file = filenames[0]
+        if len(filepaths) == 1:
+            this_file = filepaths[0]
             linter_results: Dict[str, Any] = json.loads(completed_process.stdout)
             this_linter_result = linter_results
             if len(this_linter_result) > 0:
                 return_code = ReturnCode.FAIL
                 print_linter_result(this_file, this_linter_result)
 
-        elif len(filenames) > 1:
+        elif len(filepaths) > 1:
             linter_results_list: List[Dict[str, Any]] = json.loads(completed_process.stdout)
-            for index, this_file in enumerate(filenames):
+            for index, this_file in enumerate(filepaths):
                 this_linter_result = linter_results_list[index]
                 if len(this_linter_result) > 0:
                     return_code = ReturnCode.FAIL
@@ -123,12 +123,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument(
         "--treat_warning_as_error", action="store_true", help="Treat all warnings as errors"
     )
-    parser.add_argument("filenames", nargs="*", type=Path)
+    parser.add_argument("filepaths", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
-    filenames: List[Path] = []
+    filepaths: List[Path] = []
     if args.filenames:
-        filenames = args.filenames
+        filepaths = args.filenames
 
     potential_matlab_path: Optional[Path] = None
     if len(args.matlab_path) > 0:
@@ -153,7 +153,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("Unable to find MATLAB")
         return return_code
     else:
-        return validate_matlab(matlab_path, filenames, fail_warnings)
+        return validate_matlab(matlab_path, filepaths, fail_warnings)
 
 
 if __name__ == "__main__":
