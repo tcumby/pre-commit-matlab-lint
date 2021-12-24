@@ -10,12 +10,24 @@ from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.return_code import ReturnCode
 
 
+def is_existent_file(potential_file: Path) -> bool:
+    """Assess if a Path points to a file that exists."""
+    return potential_file.exists() and potential_file.is_file()
+
+
+def extract_file_path_option(file_path_string: str) -> Optional[Path]:
+    """Return a file Path from a supplied string, or None if the supplied string does not map to an existing file."""
+    potential_file = Path(file_path_string).absolute()
+    return potential_file if is_existent_file(potential_file) else None
+
+
 def construct_matlab_script(
     filepaths: List[Path],
     fail_warnings: bool,
     enable_cyc: bool,
     enable_mod_cyc: bool,
     ignore_ok_pragmas: bool,
+    use_factory_default: bool,
     checkcode_config_file: Optional[Path] = None,
 ) -> str:
     """Return the inline MATLAB script to run on the MATLAB instance.
@@ -23,6 +35,7 @@ def construct_matlab_script(
     Parameters
     ----------
 
+    use_factory_default
     filepaths: list of Path
                             List of all filepaths to validate through MATLAB's checkcode function
     fail_warnings: bool
@@ -33,6 +46,8 @@ def construct_matlab_script(
                             Enable display of McCabe cyclomaticity camplexity calculations for each file.
     ignore_ok_pragmas: bool
                             Ignore %#ok checkcode suppression pragmas
+    use_factory_default: bool
+                            Ignore any checkcode config files and use factory defaults
     checkcode_config_file: Path, optional
                             An absolute path to a checkcode config file
     Returns
@@ -53,7 +68,9 @@ def construct_matlab_script(
     if ignore_ok_pragmas:
         command.append("-notok")
 
-    if checkcode_config_file:
+    if use_factory_default:
+        command.append("-config=factory")
+    elif checkcode_config_file:
         command.append(f"-config={str(checkcode_config_file)}")
 
     command = command + file_list
@@ -68,12 +85,14 @@ def validate_matlab(
     enable_cyc: bool,
     enable_mod_cyc: bool,
     ignore_ok_pragmas: bool,
+    use_factory_default: bool,
     checkcode_config_file: Optional[Path] = None,
 ) -> ReturnCode:
     """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
     Parameters
     ----------
+
     matlab_path: Path
                             The absolute path to the MATLAB executable
     filepaths: list of Path
@@ -86,6 +105,8 @@ def validate_matlab(
                             Enable display of McCabe cyclomaticity camplexity calculations for each file.
     ignore_ok_pragmas: bool
                             Ignore %#ok checkcode suppression pragmas
+    use_factory_default: bool
+                            Ignore any checkcode config files and use factory defaults
     checkcode_config_file: Path, optional
                             An absolute path to a checkcode config file
 
@@ -106,6 +127,7 @@ def validate_matlab(
             enable_cyc,
             enable_mod_cyc,
             ignore_ok_pragmas,
+            use_factory_default,
             checkcode_config_file,
         )
     )
@@ -145,7 +167,7 @@ def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
     """
     return_code: ReturnCode = ReturnCode.OK
 
-    # Let's not fail if any of the linter McCabe cyclomaticity ID's are present.
+    # Let's not fail if any of the linter McCabe cyclomaticity IDs are present.
     allowed_ids = ["CABE", "MCABE"]
     return_codes: List[ReturnCode] = []
     if len(linter_results) > 0:
@@ -221,6 +243,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default="",
         help="File path to a checkcode config file.",
     )
+    parser.add_argument(
+        "--use_default_checkcode_config",
+        action="store_true",
+        help="Ignore any checkcode config file and use factory default settings",
+    )
     parser.add_argument("filepaths", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
@@ -240,7 +267,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     enable_cyc: bool = args.enable_cyclomaticity
     ignore_ok_pragmas: bool = args.ignore_ok_pragmas
     fail_warnings: bool = args.treat_warning_as_error
-
+    use_factory_default: bool = args.use_default_checkcode_config
     matlab_path, return_code = find_matlab(
         potential_matlab_path=potential_matlab_path,
         matlab_version=matlab_version,
@@ -258,19 +285,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             enable_cyc,
             enable_mod_cyc,
             ignore_ok_pragmas,
+            use_factory_default,
             checkcode_config_file,
         )
-
-
-def is_existent_file(potential_file: Path) -> bool:
-    """Assess if a Path points to a file that exists."""
-    return potential_file.exists() and potential_file.is_file()
-
-
-def extract_file_path_option(file_path_string: str) -> Optional[Path]:
-    """Return a file Path from a supplied string, or None if the supplied string does not map to an existing file."""
-    potential_file = Path(file_path_string).absolute()
-    return potential_file if is_existent_file(potential_file) else None
 
 
 if __name__ == "__main__":

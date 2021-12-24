@@ -30,6 +30,7 @@ Other options:
 - Use `--enable_modified_cyclomaticity` to enable modified cyclomaticity complexity calculation display for each file.
 - Use `--ignore_ok_pragmas` to ignore `%#ok` checkcode suppression pragmas in files.
 - Use `--checkode_config_file=FILE` to specify a settings file. For instructions detail how to create the file, see [Save and Reuse Code Analyzer Message Settings](https://www.mathworks.com/help/matlab/matlab_prog/check-code-for-errors-and-warnings.html#brqxeeu-173).
+- Use `--use_default_checkcode_config` to ignore any checkcode settings files and use factory defaults.
 
 ## Usage with pre-commit
 
