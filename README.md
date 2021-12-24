@@ -29,6 +29,7 @@ Other options:
 - Use `--enable_cyclomaticity` to enable McCabe cyclomaticity complexity calculation display for each file.
 - Use `--enable_modified_cyclomaticity` to enable modified cyclomaticity complexity calculation display for each file.
 - Use `--ignore_ok_pragmas` to ignore `%#ok` checkcode suppression pragmas in files.
+- Use `--checkode_config_file=FILE` to specify a settings file. For instructions detail how to create the file, see [Save and Reuse Code Analyzer Message Settings](https://www.mathworks.com/help/matlab/matlab_prog/check-code-for-errors-and-warnings.html#brqxeeu-173).
 
 ## Usage with pre-commit
 
