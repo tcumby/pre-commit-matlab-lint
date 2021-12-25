@@ -132,6 +132,7 @@ def validate_matlab(
         )
     )
 
+    print(f"Validating MATLAB files using {str(matlab_path)}")
     completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
 
     try:
@@ -268,6 +269,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ignore_ok_pragmas: bool = args.ignore_ok_pragmas
     fail_warnings: bool = args.treat_warning_as_error
     use_factory_default: bool = args.use_default_checkcode_config
+
     matlab_path, return_code = find_matlab(
         potential_matlab_path=potential_matlab_path,
         matlab_version=matlab_version,
