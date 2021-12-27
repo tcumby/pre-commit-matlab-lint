@@ -19,18 +19,18 @@ Validate MATLAB files by analyzing them with MATLAB's [checkcode](https://www.ma
 
 In order to use this hook, MATLAB must be installed and registered. There are three ways to specify which MATLAB instance should be used:
 
-- Use `--matlab_path=PATH` to supply the full path to a MATLAB executable
-- Use `--matlab_version=VERSION` to specify a MATLAB version to locate (e.g. "9.10")
-- Use `--matlab_release_name=NAME` to specify a MATLAB release to locate (e.g. "R2021a")
+- Use `--matlab-path=PATH` to supply the full path to a MATLAB executable
+- Use `--matlab-version=VERSION` to specify a MATLAB version to locate (e.g. "9.10")
+- Use `--matlab-release-name=NAME` to specify a MATLAB release to locate (e.g. "R2021a")
 
 Other options:
 
-- Use `--treat_warning_as_error` to fail on linter warnings, in addition to linter errors.
-- Use `--enable_cyclomaticity` to enable McCabe cyclomaticity complexity calculation display for each file.
-- Use `--enable_modified_cyclomaticity` to enable modified cyclomaticity complexity calculation display for each file.
-- Use `--ignore_ok_pragmas` to ignore `%#ok` checkcode suppression pragmas in files.
-- Use `--checkode_config_file=FILE` to specify a settings file. For instructions detail how to create the file, see [Save and Reuse Code Analyzer Message Settings](https://www.mathworks.com/help/matlab/matlab_prog/check-code-for-errors-and-warnings.html#brqxeeu-173).
-- Use `--use_default_checkcode_config` to ignore any checkcode settings files and use factory defaults.
+- Use `--treat-warning-as-error` to fail on linter warnings, in addition to linter errors.
+- Use `--enable-cyclomaticity` to enable McCabe cyclomaticity complexity calculation display for each file.
+- Use `--enable-modified-cyclomaticity` to enable modified cyclomaticity complexity calculation display for each file.
+- Use `--ignore-ok-pragmas` to ignore `%#ok` checkcode suppression pragmas in files.
+- Use `--checkode-config-file=FILE` to specify a settings file. For instructions detail how to create the file, see [Save and Reuse Code Analyzer Message Settings](https://www.mathworks.com/help/matlab/matlab_prog/check-code-for-errors-and-warnings.html#brqxeeu-173).
+- Use `--use-default-checkcode-config` to ignore any checkcode settings files and use factory defaults.
 
 ## Usage with pre-commit
 

@@ -198,7 +198,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     """Parse commandline arguments and validate the supplied files through MATLAB's checkcode function."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--matlab_path",
+        "--matlab-path",
         action="store",
         type=str,
         default="",
@@ -206,7 +206,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     parser.add_argument(
-        "--matlab_version",
+        "--matlab-version",
         action="store",
         type=str,
         default=None,
@@ -214,38 +214,38 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     parser.add_argument(
-        "--matlab_release_name",
+        "--matlab-release-name",
         action="store",
         type=str,
         default=None,
         help="The release name of MATLAB to use.",
     )
     parser.add_argument(
-        "--treat_warning_as_error", action="store_true", help="Treat all warnings as errors"
+        "--treat-warning-as-error", action="store_true", help="Treat all warnings as errors"
     )
 
     parser.add_argument(
-        "--enable_modified_cyclomaticity",
+        "--enable-modified-cyclomaticity",
         action="store_true",
         help="Enable the display of modified cyclomaticity complexity calculation for each file.",
     )
     parser.add_argument(
-        "--enable_cyclomaticity",
+        "--enable-cyclomaticity",
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
     parser.add_argument(
-        "--ignore_ok_pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas"
+        "--ignore-ok-pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas"
     )
     parser.add_argument(
-        "--checkcode_config_file",
+        "--checkcode-config-file",
         action="store",
         type=str,
         default="",
         help="File path to a checkcode config file.",
     )
     parser.add_argument(
-        "--use_default_checkcode_config",
+        "--use-default-checkcode-config",
         action="store_true",
         help="Ignore any checkcode config file and use factory default settings",
     )
