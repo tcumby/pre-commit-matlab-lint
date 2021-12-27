@@ -20,7 +20,6 @@ build-backend = "poetry.masonry.api"
 #########################################################################################
 
 # This is all metadata that Poetry uses directly.
-# TODO: You will want to modify this section.
 # Hopefully the defaults are good, so you only need to change the individual TODOs.
 # Note that some of these can be filled in with arguments to `tyrannosaurus new` (e.g. --keywords).
 
@@ -37,7 +36,7 @@ name = "precommitmatlablint"
 version = "0.1.0"
 
 # TODO: Set the description and keywords here
-description = "A Python project"
+description = "A pre-commit hook to validate MATLAB code."
 keywords = [""]
 authors = ["Ty Cumby"]
 maintainers = ["Ty Cumby"]
@@ -46,7 +45,7 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/ty.cumby/pre-commit-matlab-lint"
 repository = "https://github.com/ty.cumby/pre-commit-matlab-lint"
-documentation = "https://pre-commit-matlab-lint.readthedocs.io"
+#documentation = "https://pre-commit-matlab-lint.readthedocs.io"
 # TODO: Add topics here
 # Note: Poetry adds the license to the classifiers automatically
 # Development Status, license, and Python versions are kept consistent
@@ -87,18 +86,13 @@ Download = "https://pypi.org/project/precommitmatlablint/"
 # Poetry build & dependencies
 #########################################################################################
 
-# TODO: You will want to modify this section.
-
 [tool.poetry.scripts]
-# TODO Is your code a script?
 # Set the name of the Python module followed by a colon, followed by the name of the function
 lint-matlab = "precommitmatlablint.lint_matlab:main"
 
 [tool.poetry.dependencies]
-# TODO Add and remove dependencies here
 # These are dependencies that are included in the main package
 python                   = "^3.8"
-typer                    = "^0.3"
 
 [tool.poetry.dev-dependencies]
 # TODO Remove build dependencies you don't want (like xdoctest, perhaps)
@@ -115,8 +109,8 @@ coverage                 = {extras = ["toml"], version = "^6.0"}
 flake8                   = "^3.9"
 flake8-bugbear           = ">=21"
 flake8-docstrings        = "^1.5"
-pre-commit               = "^2.15"
-pre-commit-hooks         = "^4.0"
+pre-commit               = "^2.16"
+pre-commit-hooks         = "^4.1"
 pytest                   = "^6.2"
 pytest-cov               = "^3.0"
 sphinx                   = "^4.0"
@@ -226,8 +220,8 @@ long_description   = "tool.poetry.description"
 #authors = [
 #    "<<Author Name>> <github:<<username>>,orcid:<<id>>>"
 #]
-authors = [ ]
-contributors = [ ]
+authors = [ "Ty Cumby <github:tcumby>" ]
+contributors = [ "Ty Cumby <github:tcumby>" ]
 # Turn this into a literal list if it is different than the authors
 maintainers = "tool.tyrannosaurus.sources.authors"
 
