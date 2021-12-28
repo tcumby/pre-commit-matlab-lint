@@ -207,9 +207,9 @@ def find_matlab_version(target_version: str, search_path: List[Path]) -> Optiona
 
 
 def find_matlab(
-    potential_matlab_path: Optional[Path],
-    matlab_version: Optional[str],
-    matlab_release_name: Optional[str],
+    potential_matlab_path: Optional[Path] = None,
+    matlab_version: Optional[str] = None,
+    matlab_release_name: Optional[str] = None,
 ) -> Tuple[Optional[Path], ReturnCode]:
     """Find the path to a MATLAB executable by providing a path for validation, release name, or version.
 
