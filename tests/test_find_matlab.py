@@ -78,7 +78,7 @@ class TestFindMatlab:
         assert match is not None
         release_name = match.string
 
-        found_matlab, return_code = find_matlab(release_name=release_name)
+        found_matlab, return_code = find_matlab(matlab_release_name=release_name)
         assert found_matlab is not None
         assert return_code == ReturnCode.OK
 
