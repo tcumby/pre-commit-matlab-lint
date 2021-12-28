@@ -86,6 +86,7 @@ def get_matlab_registry_installs() -> List[Path]:
     while True:
         try:
             subkey_names.append(winreg.EnumKey(mathworks_key, index))
+            index += 1
         except OSError:
             break
 
