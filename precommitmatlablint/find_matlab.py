@@ -117,12 +117,14 @@ class MatlabHandle:
 
 class MatlabHandleList:
     handles: List[MatlabHandle]
-    cache_file: Path = Path("matlab_info_cache.yaml")
+    cache_file: Path
 
     def __init__(self, cache_file: Optional[Path] = None):
         self.handles = []
         if cache_file:
             self.cache_file = cache_file
+        else:
+            self.cache_file = Path("matlab_info_cache.yaml")
 
     def save(self):
         data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
