@@ -72,14 +72,14 @@ class MatlabHandle:
         return version, release, return_code
 
     def compute_checksum(self) -> str:
-        hash = hashlib.sha256()
+        hasher = hashlib.sha256()
         checksum: str = ""
         if self.is_valid():
             with self.exe_path.open("rb") as f:
                 for page in iter(lambda: f.read(4096), b""):
-                    hash.update(page)
+                    hasher.update(page)
 
-            checksum = hash.hexdigest()
+            checksum = hasher.hexdigest()
         return checksum
 
     def to_dict(self) -> Dict[str, str]:
@@ -118,6 +118,7 @@ class MatlabHandle:
 class MatlabHandleList:
     handles: List[MatlabHandle]
     cache_file: Path
+    has_changes: bool
 
     def __init__(self, cache_file: Optional[Path] = None):
         self.handles = []
@@ -126,11 +127,14 @@ class MatlabHandleList:
         else:
             self.cache_file = Path("matlab_info_cache.yaml")
 
-    def save(self):
-        data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
+        self.has_changes = False
 
-        with self.cache_file.open("w") as f:
-            yaml.safe_dump(data, f)
+    def save(self):
+        if self.has_changes:
+            data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
+
+            with self.cache_file.open("w") as f:
+                yaml.safe_dump(data, f)
 
     def load(self):
         self.clear()
@@ -139,17 +143,25 @@ class MatlabHandleList:
             for element in data:
                 self.append(MatlabHandle.from_dict(element))
 
+            self.has_changes = False
+
+    def update(self, search_list: List[Path]):
+        pass
+
     def append(self, handle: MatlabHandle):
         self.handles.append(handle)
+        self.has_changes = True
 
     def remove(self, handle: MatlabHandle):
         self.handles.remove(handle)
+        self.has_changes = True
 
     def insert(self, index: int, handle: MatlabHandle) -> None:
         self.handles.insert(index, handle)
+        self.has_changes = True
 
-    def count(self) -> int:
-        return self.handles.count()
+    def len(self) -> int:
+        return len(self.handles)
 
     def clear(self) -> None:
         self.handles.clear()
@@ -300,11 +312,14 @@ def validate_matlab_path(path: Path) -> bool:
     return path.exists() and path.is_file()
 
 
-def find_matlab_release(release: str, search_path: List[Path]) -> Optional[Path]:
+def find_matlab_release(
+    release: str, search_path: List[Path], handle_list: MatlabHandleList
+) -> Optional[Path]:
     """Find the path to a MATLAB executable specified by the release name (e.g. R2021a).
 
     Parameters
     ----------
+    handle_list
     release: str
                 The desired MATLAB release name
     search_path: list of Path
@@ -363,7 +378,9 @@ def query_matlab_version(matlab_exe_path: Path) -> str:
     return version_string
 
 
-def find_matlab_version(target_version: str, search_path: List[Path]) -> Optional[Path]:
+def find_matlab_version(
+    target_version: str, search_path: List[Path], handle_list: MatlabHandleList
+) -> Optional[Path]:
     """Find the path to a MATLAB executable specified by its version number.
 
     Parameters
@@ -376,7 +393,11 @@ def find_matlab_version(target_version: str, search_path: List[Path]) -> Optiona
     Returns
     _______
     Path, optional
-                   The absolute file path to the MATLAB executable, if found"""
+                   The absolute file path to the MATLAB executable, if found
+
+    Parameters
+    ----------
+    handle_list"""
     matlab_path: Optional[Path] = None
     matlab_exe_name = get_matlab_exe_name()
 
@@ -395,7 +416,8 @@ def find_matlab(
     potential_matlab_path: Optional[Path] = None,
     matlab_version: Optional[str] = None,
     matlab_release_name: Optional[str] = None,
-) -> Tuple[Optional[Path], ReturnCode]:
+    cache_file: Optional[Path] = None,
+) -> Tuple[Optional[MatlabHandle], ReturnCode]:
     """Find the path to a MATLAB executable by providing a path for validation, release name, or version.
 
     Note that it is only necessary to supply either one of the following: a path, a version or a release name.
@@ -416,20 +438,21 @@ def find_matlab(
     """
 
     return_code: ReturnCode = ReturnCode.FAIL
-    matlab_path: Optional[Path] = None
+    handle_list: MatlabHandleList = MatlabHandleList(cache_file)
+    handle_list.load()
 
-    if potential_matlab_path is not None and validate_matlab_path(potential_matlab_path):
-        return_code = ReturnCode.OK
-        matlab_path = potential_matlab_path
+    handle: Optional[MatlabHandle] = None
+    if potential_matlab_path is not None:
+        handle = handle_list.find_exe_path(potential_matlab_path)
     else:
         if matlab_release_name is not None:
-            matlab_path = find_matlab_release(matlab_release_name, get_matlab_installs())
-            if matlab_path is not None:
-                return_code = ReturnCode.OK
+            handle = handle_list.find_release(matlab_release_name)
 
         if matlab_version is not None:
-            matlab_path = find_matlab_version(matlab_version, get_matlab_installs())
-            if matlab_path is not None:
-                return_code = ReturnCode.OK
+            handle = handle_list.find_version(matlab_version)
 
-    return matlab_path, return_code
+    handle_list.save()
+
+    return_code = ReturnCode.OK if handle is not None else ReturnCode.FAIL
+
+    return handle, return_code
