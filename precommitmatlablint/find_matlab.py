@@ -1,11 +1,14 @@
+import hashlib
 import os
 import re
 import subprocess
 import sys
 import winreg
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
+
+import yaml
 
 from precommitmatlablint.return_code import ReturnCode
 
@@ -14,12 +17,25 @@ from precommitmatlablint.return_code import ReturnCode
 class MatlabHandle:
     home_path: Path
     exe_path: Path
-    checksum: str
-    version: str
-    release: str
+    checksum: str = ""
+    version: str = ""
+    release: str = ""
+    is_initialized: bool = False
+
+    def __post_init__(self):
+        if len(self.version) == 0 and len(self.release) == 0:
+            self.version, self.release, _ = self.query_version()
+
+        self.checksum = self.compute_checksum()
+        self.is_initialized = (
+            self.is_valid()
+            and len(self.version) > 0
+            and len(self.release) > 0
+            and len(self.checksum) > 0
+        )
 
     def is_valid(self) -> bool:
-        pass
+        return self.exe_path.exists() and self.exe_path.is_file()
 
     def run(self, matlab_command: str) -> Tuple[str, ReturnCode]:
         stdout: str = ""
@@ -38,24 +54,36 @@ class MatlabHandle:
                 stdout = completed_process.stdout
                 return_code = ReturnCode.OK
             except subprocess.SubprocessError as err:
-                print(f"Failed to run MATLAB command: {str(err)}")
+                print(f"Failed to run MATLAB command '{matlab_command}': {str(err)}")
         return stdout, return_code
 
-    def query_version(self) -> Tuple[str, ReturnCode]:
+    def query_version(self) -> Tuple[str, str, ReturnCode]:
         # With this command, stdout will contain <major>.<minor>.<point>.<patch> (R<release>),
         # e.g. 9.10.0.1602886 (R2021a)
-        version, return_code = self.run("clc;disp(version);quit")
+        stdout, return_code = self.run("clc;disp(version);quit")
+        version: str = ""
+        release: str = ""
+        if ReturnCode.OK == return_code:
+            match = re.match(r"(?P<version>[\d+\.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
+            if match:
+                version = match.group("version")
+                release = match.group("release")
 
-        return version, return_code
+        return version, release, return_code
+
+    def compute_checksum(self) -> str:
+        hash = hashlib.sha256()
+        checksum: str = ""
+        if self.is_valid():
+            with self.exe_path.open("rb") as f:
+                for page in iter(lambda: f.read(4096), b""):
+                    hash.update(page)
+
+            checksum = hash.hexdigest()
+        return checksum
 
     def to_dict(self) -> Dict[str, str]:
-        return {
-            "home_path": str(self.home_path),
-            "exe_path": str(self.exe_path),
-            "version": self.version,
-            "release": self.release,
-            "checksum": self.checksum,
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, input_dict: Dict[str, str]) -> "MatlabHandle":
@@ -72,6 +100,93 @@ class MatlabHandle:
             checksum=checksum,
             release=release,
         )
+
+    @classmethod
+    def get_arch_folder_name(cls) -> str:
+        """Return the MATLAB architecture folder name."""
+        arch_folders = {"win32": "win64", "darwin": "maci64", "linux": "glnxa64"}
+
+        return arch_folders[sys.platform]
+
+    @classmethod
+    def get_matlab_exe_name(cls) -> str:
+        """Return the MATLAB executable file name."""
+        matlab_exe: str = "matlab.exe" if sys.platform == "win32" else "matlab"
+        return matlab_exe
+
+
+class MatlabHandleList:
+    handles: List[MatlabHandle]
+    cache_file: Path = Path("matlab_info_cache.yaml")
+
+    def __init__(self, cache_file: Optional[Path] = None):
+        self.handles = []
+        if cache_file:
+            self.cache_file = cache_file
+
+    def save(self):
+        data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
+
+        with self.cache_file.open("w") as f:
+            yaml.safe_dump(data, f)
+
+    def load(self):
+        self.clear()
+        with self.cache_file.open("r") as f:
+            data = yaml.safe_load(f)
+            for element in data:
+                self.append(MatlabHandle.from_dict(element))
+
+    def append(self, handle: MatlabHandle):
+        self.handles.append(handle)
+
+    def remove(self, handle: MatlabHandle):
+        self.handles.remove(handle)
+
+    def insert(self, index: int, handle: MatlabHandle) -> None:
+        self.handles.insert(index, handle)
+
+    def count(self) -> int:
+        return self.handles.count()
+
+    def clear(self) -> None:
+        self.handles.clear()
+
+    def find_release(self, release_name: str) -> Optional[MatlabHandle]:
+        handle: Optional[MatlabHandle] = None
+
+        matches = [h for h in self.handles if release_name.lower() == h.release.lower()]
+        if len(matches) > 0:
+            handle = matches[0]
+
+        return handle
+
+    def find_version(self, version: str) -> Optional[MatlabHandle]:
+        handle: Optional[MatlabHandle] = None
+
+        matches = [h for h in self.handles if version in h.version]
+        if len(matches) > 0:
+            handle = matches[0]
+
+        return handle
+
+    def find_home_path(self, matlab_home_path: Path) -> Optional[MatlabHandle]:
+        handle: Optional[MatlabHandle] = None
+
+        matches = [h for h in self.handles if matlab_home_path == h.home_path]
+        if len(matches) > 0:
+            handle = matches[0]
+
+        return handle
+
+    def find_exe_path(self, matlab_exe_path: Path) -> Optional[MatlabHandle]:
+        handle: Optional[MatlabHandle] = None
+
+        matches = [h for h in self.handles if matlab_exe_path == h.exe_path]
+        if len(matches) > 0:
+            handle = matches[0]
+
+        return handle
 
 
 def get_matlab_root(platform: str) -> Path:
