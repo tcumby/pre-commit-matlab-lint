@@ -3,10 +3,75 @@ import re
 import subprocess
 import sys
 import winreg
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from precommitmatlablint.return_code import ReturnCode
+
+
+@dataclass
+class MatlabHandle:
+    home_path: Path
+    exe_path: Path
+    checksum: str
+    version: str
+    release: str
+
+    def is_valid(self) -> bool:
+        pass
+
+    def run(self, matlab_command: str) -> Tuple[str, ReturnCode]:
+        stdout: str = ""
+        return_code = ReturnCode.FAIL
+        if self.is_valid():
+            command: List[str] = [str(self.exe_path), "-nosplash", "-nodesktop"]
+            if sys.platform == "win32":
+                command.append("-wait")
+            command.append("-batch")
+            command.append(matlab_command)
+
+            try:
+                completed_process = subprocess.run(command, text=True, capture_output=True)
+                completed_process.check_returncode()
+
+                stdout = completed_process.stdout
+                return_code = ReturnCode.OK
+            except subprocess.SubprocessError as err:
+                print(f"Failed to run MATLAB command: {str(err)}")
+        return stdout, return_code
+
+    def query_version(self) -> Tuple[str, ReturnCode]:
+        # With this command, stdout will contain <major>.<minor>.<point>.<patch> (R<release>),
+        # e.g. 9.10.0.1602886 (R2021a)
+        version, return_code = self.run("clc;disp(version);quit")
+
+        return version, return_code
+
+    def to_dict(self) -> Dict[str, str]:
+        return {
+            "home_path": str(self.home_path),
+            "exe_path": str(self.exe_path),
+            "version": self.version,
+            "release": self.release,
+            "checksum": self.checksum,
+        }
+
+    @classmethod
+    def from_dict(cls, input_dict: Dict[str, str]) -> "MatlabHandle":
+        home_path = Path(input_dict.get("home_path", "")).absolute()
+        exe_path = Path(input_dict.get("exe_path", "")).absolute()
+        version = input_dict.get("version", "")
+        checksum = input_dict.get("checksum", "")
+        release = input_dict.get("release", "")
+
+        return MatlabHandle(
+            home_path=home_path,
+            exe_path=exe_path,
+            version=version,
+            checksum=checksum,
+            release=release,
+        )
 
 
 def get_matlab_root(platform: str) -> Path:
