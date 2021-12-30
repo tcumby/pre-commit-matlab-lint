@@ -1,12 +1,9 @@
 import argparse
 import json
-import subprocess
-import sys
 from pathlib import Path
-from subprocess import run
 from typing import Any, Dict, List, Optional, Sequence
 
-from precommitmatlablint.find_matlab import find_matlab
+from precommitmatlablint.find_matlab import find_matlab, MatlabHandle
 from precommitmatlablint.return_code import ReturnCode
 
 
@@ -79,7 +76,7 @@ def construct_matlab_script(
 
 
 def validate_matlab(
-    matlab_path: Path,
+    matlab_handle: MatlabHandle,
     filepaths: List[Path],
     fail_warnings: bool,
     enable_cyc: bool,
@@ -93,8 +90,8 @@ def validate_matlab(
     Parameters
     ----------
 
-    matlab_path: Path
-                            The absolute path to the MATLAB executable
+    matlab_handle: MatlabHandle
+                            The handle to the MATLAB instance
     filepaths: list of Path
                             The list of m-file file paths
     fail_warnings: bool
@@ -114,36 +111,29 @@ def validate_matlab(
     -------
     ReturnCode
     """
-    return_code = ReturnCode.OK
 
-    command: List[str] = [str(matlab_path)]
-    if "win32" == sys.platform:
-        command.append("-wait")
-    command.append("-batch")
-    command.append(
-        construct_matlab_script(
-            filepaths,
-            fail_warnings,
-            enable_cyc,
-            enable_mod_cyc,
-            ignore_ok_pragmas,
-            use_factory_default,
-            checkcode_config_file,
-        )
+    matlab_script: str = construct_matlab_script(
+        filepaths,
+        fail_warnings,
+        enable_cyc,
+        enable_mod_cyc,
+        ignore_ok_pragmas,
+        use_factory_default,
+        checkcode_config_file,
     )
 
-    print(f"Validating MATLAB files using {str(matlab_path)}")
-    completed_process: subprocess.CompletedProcess = run(command, text=True, capture_output=True)
+    print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
+    stdout, return_code = matlab_handle.run(matlab_script)
 
     try:
         if len(filepaths) == 1:
             this_file = filepaths[0]
-            linter_results: List[Dict[str, Any]] = json.loads(completed_process.stdout)
+            linter_results: List[Dict[str, Any]] = json.loads(stdout)
             return_code = inspect_linter_result(linter_results)
             print_linter_result(this_file, linter_results)
 
         elif len(filepaths) > 1:
-            linter_results_list: List[List[Dict[str, Any]]] = json.loads(completed_process.stdout)
+            linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
             for index, this_file in enumerate(filepaths):
                 this_linter_results = linter_results_list[index]
                 return_code = inspect_linter_result(this_linter_results)
@@ -270,18 +260,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     fail_warnings: bool = args.treat_warning_as_error
     use_factory_default: bool = args.use_default_checkcode_config
 
-    matlab_path, return_code = find_matlab(
+    matlab_handle, return_code = find_matlab(
         potential_matlab_path=potential_matlab_path,
         matlab_version=matlab_version,
         matlab_release_name=matlab_release_name,
     )
 
-    if ReturnCode.FAIL == return_code or matlab_path is None or not matlab_path.exists():
+    if ReturnCode.FAIL == return_code or matlab_handle is None:
         print("Unable to find MATLAB")
         return return_code
     else:
         return validate_matlab(
-            matlab_path,
+            matlab_handle,
             filepaths,
             fail_warnings,
             enable_cyc,
