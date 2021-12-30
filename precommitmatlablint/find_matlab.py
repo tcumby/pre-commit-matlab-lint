@@ -145,8 +145,19 @@ class MatlabHandleList:
 
             self.has_changes = False
 
-    def update(self, search_list: List[Path]):
-        pass
+    def update(self, search_list: List[Path]) -> None:
+        """Add handles to new MATLAB installs"""
+        for home_path in search_list:
+            if self.find_home_path(home_path) is None:
+                exe_path = home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+                handle = MatlabHandle(home_path=home_path, exe_path=exe_path)
+                self.append(handle)
+
+    def prune(self) -> None:
+        """Remove handles to MATLAB installs that no longer exist on the machine"""
+        remove_list: List[MatlabHandle] = [h for h in self.handles if not h.is_valid()]
+        for handle in remove_list:
+            self.remove(handle)
 
     def append(self, handle: MatlabHandle):
         self.handles.append(handle)
@@ -430,16 +441,17 @@ def find_matlab(
                                             The desired MATLAB version.
     matlab_release_name: str, optional
 
+    cache_file: Path, optional
     Returns
     -------
-    matlab_path: Path, optional
-                    The absolute path to the MATLAB executable
+    matlab_path: MatlabHandle, optional
+                    A handle to a MATLAB instance
     return_code: ReturnCode
     """
 
-    return_code: ReturnCode = ReturnCode.FAIL
     handle_list: MatlabHandleList = MatlabHandleList(cache_file)
     handle_list.load()
+    handle_list.update(get_matlab_installs())
 
     handle: Optional[MatlabHandle] = None
     if potential_matlab_path is not None:
