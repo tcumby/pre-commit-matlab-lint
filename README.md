@@ -19,7 +19,7 @@ Validate MATLAB files by analyzing them with MATLAB's [checkcode](https://www.ma
 
 In order to use this hook, MATLAB must be installed and registered. There are three ways to specify which MATLAB instance should be used:
 
-- Use `--matlab-path=PATH` to supply the full path to a MATLAB executable
+- Use `--matlab-home-path=PATH` to supply the full path to a MATLAB home directory (e.g. "/Applications/MATLAB_R2021a.app" on macOS, "C:\Program Files\MATLAB\R2021a" on Windows)
 - Use `--matlab-version=VERSION` to specify a MATLAB version to locate (e.g. "9.10")
 - Use `--matlab-release-name=NAME` to specify a MATLAB release to locate (e.g. "R2021a")
 
