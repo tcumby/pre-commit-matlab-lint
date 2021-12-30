@@ -148,7 +148,11 @@ class MatlabHandle:
         return checksum
 
     def to_dict(self) -> Dict[str, str]:
-        return asdict(self)
+        output: Dict[str, str] = asdict(self)
+        for _, (key, value) in enumerate(output.items()):
+            if isinstance(value, Path):
+                output[key] = str(value)
+        return output
 
     @classmethod
     def contruct_exe_path(cls, home_path: Path) -> Path:
