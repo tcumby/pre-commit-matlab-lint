@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import sys
-import winreg
+
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
@@ -377,6 +377,8 @@ def get_matlab_installs() -> List[Path]:
 
 
 def get_matlab_registry_installs() -> List[Path]:
+    import winreg
+
     """Get list of MATLAB home paths from the Windows registry."""
     matlab_home_paths: List[Path] = []
     hklm = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
