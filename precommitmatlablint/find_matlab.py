@@ -15,6 +15,8 @@ from precommitmatlablint.return_code import ReturnCode
 
 @dataclass
 class MatlabHandle:
+    """A class to provide a simple interface to a MATLAB executable instance."""
+
     home_path: Path
     exe_path: Path
     checksum: str = ""
@@ -24,6 +26,7 @@ class MatlabHandle:
 
     def __post_init__(self):
         if len(self.version) == 0 and len(self.release) == 0:
+            # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
             self.version, self.release, _ = self.query_version()
 
         self.checksum = self.compute_checksum()
@@ -38,14 +41,23 @@ class MatlabHandle:
         return self.exe_path.exists() and self.exe_path.is_file()
 
     def run(self, matlab_command: str) -> Tuple[str, ReturnCode]:
+        """Run a MATLAB command through this MATLAB instance.
+
+        Parameters
+        ----------
+        matlab_command: str
+                            A single-line MATLAB command string
+
+        Returns
+        -------
+        stdout:str
+                    The stdout from the MATLAB command execution
+        return_code: ReturnCode
+        """
         stdout: str = ""
         return_code = ReturnCode.FAIL
         if self.is_valid():
-            command: List[str] = [str(self.exe_path), "-nosplash", "-nodesktop"]
-            if sys.platform == "win32":
-                command.append("-wait")
-            command.append("-batch")
-            command.append(matlab_command)
+            command: List[str] = self.__construct_command(matlab_command)
 
             try:
                 completed_process = subprocess.run(command, text=True, capture_output=True)
@@ -56,6 +68,48 @@ class MatlabHandle:
             except subprocess.SubprocessError as err:
                 print(f"Failed to run MATLAB command '{matlab_command}': {str(err)}")
         return stdout, return_code
+
+    def __construct_command(self, matlab_command: str) -> List[str]:
+        """Construct the command-line command to execute the MATLAB command."""
+        major, minor = self.__parse_version_string()
+
+        command: List[str] = [str(self.exe_path), "-nosplash", "-nodesktop"]
+        if sys.platform == "win32":
+            # For Windows, the MATLAB executable at <home>/bin/matlab.exe exits immediately so "-wait" is needed
+            command.append("-wait")
+        else:
+            # For Linux/macOS "-nodisplay" exists in addition to "-nodesktop"
+            command.append("-nodisplay")
+
+        # Starting with MATLAB 2019a (v9.6) the preferred command line argument for running MATLAB non-interactively is
+        # "-batch"
+        if major >= 9 and minor >= 6:
+            command.append("-batch")
+        else:
+            command.append("-r")
+
+        command.append(matlab_command)
+
+        return command
+
+    def __parse_version_string(self) -> Tuple[int, int]:
+        """Extract the major and minor version number from the version string of the form
+        <major>.<minor>.<point>.<patch>
+
+        Returns
+        -------
+        major: int
+        minor: int
+        """
+
+        major: int = 0
+        minor: int = 0
+        match = re.match(r"(?P<major>\d+)\.(?P<minor>\d+).*", self.version)
+        if match:
+            major = int(match.group("major"))
+            minor = int(match.group("minor"))
+
+        return major, minor
 
     def query_version(self) -> Tuple[str, str, ReturnCode]:
         """Query a given MATLAB instance for its version.
@@ -374,111 +428,6 @@ def get_matlab_registry_installs() -> List[Path]:
             pass
 
     return sorted(matlab_home_paths)
-
-
-# def validate_matlab_path(path: Path) -> bool:
-#     """Validate whether a potential MATLAB executable path is legitimate or not."""
-#     return path.exists() and path.is_file()
-
-
-# def find_matlab_release(
-#     release: str, search_path: List[Path], handle_list: MatlabHandleList
-# ) -> Optional[Path]:
-#     """Find the path to a MATLAB executable specified by the release name (e.g. R2021a).
-#
-#     Parameters
-#     ----------
-#     handle_list
-#     release: str
-#                 The desired MATLAB release name
-#     search_path: list of Path
-#                  The list of MATLAB home paths to search through
-#
-#     Returns
-#     -------
-#     Path, optional
-#                    The full path to the MATLAB executable, if found"""
-#     matlab_path: Optional[Path] = None
-#
-#     # The MATLAB folder path contains the release name in the root folder,
-#     # e.g C:/Program Files/MATLAB/R2021a on Windows, /Applications/MATLAB_R2021a.app on macOS, /usr/local/MATLAB/R2021a
-#     # on Linux
-#     matches = [p for p in search_path if release in str(p)]
-#
-#     if len(matches) > 0:
-#         matlab_root_path = matches[0]
-#         matlab_path = matlab_root_path / "bin" / get_matlab_exe_name()
-#
-#     return matlab_path
-
-
-# def get_arch_folder_name() -> str:
-#     """Return the MATLAB architecture folder name."""
-#     arch_folders = {"win32": "win64", "darwin": "maci64", "linux": "glnxa64"}
-#
-#     return arch_folders[sys.platform]
-#
-#
-# def get_matlab_exe_name() -> str:
-#     """Return the MATLAB executable file name."""
-#     matlab_exe: str = "matlab.exe" if sys.platform == "win32" else "matlab"
-#     return matlab_exe
-
-
-# def query_matlab_version(matlab_exe_path: Path) -> str:
-#     """Query a given MATLAB instance for its version."""
-#     matlab_command: str = "clc;disp(version);quit"
-#     version_string: str = ""
-#     command: List[str] = [str(matlab_exe_path), "-nosplash", "-nodesktop"]
-#     if sys.platform == "win32":
-#         command.append("-wait")
-#     command.append("-batch")
-#     command.append(matlab_command)
-#
-#     try:
-#         completed_process = subprocess.run(command, text=True, capture_output=True)
-#         completed_process.check_returncode()
-#         # With this command, stdout will contain <major>.<minor>.<point>.<patch> (R<release>),
-#         # e.g. 9.10.0.1602886 (R2021a)
-#         version_string = completed_process.stdout
-#     except subprocess.SubprocessError as err:
-#         print(f"Failed to query MATLAB version: {str(err)}")
-#
-#     return version_string
-
-
-# def find_matlab_version(
-#     target_version: str, search_path: List[Path], handle_list: MatlabHandleList
-# ) -> Optional[Path]:
-#     """Find the path to a MATLAB executable specified by its version number.
-#
-#     Parameters
-#     __________
-#     target_version: str
-#                         The desired MATLAB version (e.g. 9.10)
-#     search_path: list of Path
-#                         The list of all MATLAB home folder paths
-#
-#     Returns
-#     _______
-#     Path, optional
-#                    The absolute file path to the MATLAB executable, if found
-#
-#     Parameters
-#     ----------
-#     handle_list"""
-#     matlab_path: Optional[Path] = None
-#     matlab_exe_name = get_matlab_exe_name()
-#
-#     for install_root in search_path:
-#         potential_path = install_root / "bin" / matlab_exe_name
-#
-#         this_version = query_matlab_version(potential_path)
-#         if target_version in this_version:
-#             matlab_path = potential_path
-#             break
-#
-#     return matlab_path
 
 
 def find_matlab(
