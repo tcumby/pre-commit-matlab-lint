@@ -309,7 +309,7 @@ class MatlabHandleList:
 
         Parameters
         __________
-        matlab_exe_path: Path
+        matlab_home_path: Path
                                 A file path to a MATLAB executable (e.g.
                                 C:\\Program Files\\MATLAB\\R2021a\bin\\matlab.exe)
 
@@ -431,7 +431,7 @@ def get_matlab_registry_installs() -> List[Path]:
 
 
 def find_matlab(
-    matlab_exe_path: Optional[Path] = None,
+    matlab_home_path: Optional[Path] = None,
     matlab_version: Optional[str] = None,
     matlab_release_name: Optional[str] = None,
     cache_file: Optional[Path] = None,
@@ -442,8 +442,8 @@ def find_matlab(
 
     Parameters
     ----------
-    matlab_exe_path: Path, optional
-                                            An absolute path to a MATLAB executable to validate.
+    matlab_home_path: Path, optional
+                                            An absolute path to a MATLAB home folder to validate.
     matlab_version: str, optional
                                             The desired MATLAB version.
     matlab_release_name: str, optional
@@ -461,13 +461,13 @@ def find_matlab(
     handle_list.update(get_matlab_installs())
 
     handle: Optional[MatlabHandle] = None
-    if matlab_exe_path is not None:
-        handle = handle_list.find_exe_path(matlab_exe_path)
+    if matlab_home_path is not None:
+        handle = handle_list.find_home_path(matlab_home_path)
         if handle is None:
             # This must be an installation that our search path missed. Try to contruct a MatlabHandle and if it
             # initializes, then add it to the MatlabHandleList
-            home_path: Path = matlab_exe_path.parent.parent
-            test_handle = MatlabHandle(home_path=home_path, exe_path=matlab_exe_path)
+            exe_path: Path = matlab_home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+            test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path)
             handle = test_handle if test_handle.is_initialized else None
             if handle is not None:
                 handle_list.append(handle)

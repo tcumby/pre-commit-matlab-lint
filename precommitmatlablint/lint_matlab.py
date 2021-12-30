@@ -188,11 +188,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     """Parse commandline arguments and validate the supplied files through MATLAB's checkcode function."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--matlab-path",
+        "--matlab-home-path",
         action="store",
         type=str,
         default="",
-        help="File path to the MATLAB executable.",
+        help="Folder path to the MATLAB home directory.",
     )
 
     parser.add_argument(
@@ -246,7 +246,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.filenames:
         filepaths = args.filenames
 
-    potential_matlab_path: Optional[Path] = extract_file_path_option(args.matlab_path)
+    matlab_home_path: Optional[Path] = extract_file_path_option(args.matlab_home_path)
 
     matlab_version: Optional[str] = args.matlab_version
 
@@ -261,7 +261,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     use_factory_default: bool = args.use_default_checkcode_config
 
     matlab_handle, return_code = find_matlab(
-        matlab_exe_path=potential_matlab_path,
+        matlab_home_path=matlab_home_path,
         matlab_version=matlab_version,
         matlab_release_name=matlab_release_name,
     )
