@@ -261,7 +261,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     use_factory_default: bool = args.use_default_checkcode_config
 
     matlab_handle, return_code = find_matlab(
-        potential_matlab_path=potential_matlab_path,
+        matlab_exe_path=potential_matlab_path,
         matlab_version=matlab_version,
         matlab_release_name=matlab_release_name,
     )
