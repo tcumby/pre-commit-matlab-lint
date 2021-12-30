@@ -151,6 +151,10 @@ class MatlabHandle:
         return asdict(self)
 
     @classmethod
+    def contruct_exe_path(cls, home_path: Path) -> Path:
+        return home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+
+    @classmethod
     def from_dict(cls, input_dict: Dict[str, str]) -> "MatlabHandle":
         home_path = Path(input_dict.get("home_path", "")).absolute()
         exe_path = Path(input_dict.get("exe_path", "")).absolute()
@@ -214,7 +218,7 @@ class MatlabHandleList:
         """Add handles to new MATLAB installs"""
         for home_path in search_list:
             if self.find_home_path(home_path) is None:
-                exe_path = home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+                exe_path = MatlabHandle.contruct_exe_path(home_path)
                 handle = MatlabHandle(home_path=home_path, exe_path=exe_path)
                 self.append(handle)
 
@@ -466,7 +470,7 @@ def find_matlab(
         if handle is None:
             # This must be an installation that our search path missed. Try to contruct a MatlabHandle and if it
             # initializes, then add it to the MatlabHandleList
-            exe_path: Path = matlab_home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+            exe_path: Path = MatlabHandle.contruct_exe_path(matlab_home_path)
             test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path)
             handle = test_handle if test_handle.is_initialized else None
             if handle is not None:
