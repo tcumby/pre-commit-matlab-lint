@@ -364,14 +364,23 @@ def get_matlab_installs() -> List[Path]:
     matlab_home_paths: List[Path] = []
     root_path = get_matlab_root(this_platform)
     if "win32" == this_platform:
-        matlab_home_paths = sorted(root_path.glob(r"R\d+\w"), reverse=True)
+        matlab_home_paths = [
+            d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
+        ]
+        matlab_home_paths = sorted(matlab_home_paths, reverse=True)
         matlab_home_paths = sorted(
             list(set(sorted(matlab_home_paths + get_matlab_registry_installs()))), reverse=True
         )
     elif "darwin" == this_platform:
-        matlab_home_paths = sorted(root_path.glob(r"MATLAB_R\d+\w"), reverse=True)
+        matlab_home_paths = [
+            d for d in root_path.iterdir() if d.is_dir() and re.match(r"MATLAB_R\d+\w", d.stem)
+        ]
+        matlab_home_paths = sorted(matlab_home_paths, reverse=True)
     elif "linux" == this_platform:
-        matlab_home_paths = sorted(root_path.glob(r"R\d+\w"), reverse=True)
+        matlab_home_paths = [
+            d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
+        ]
+        matlab_home_paths = sorted(matlab_home_paths, reverse=True)
 
     return matlab_home_paths
 
