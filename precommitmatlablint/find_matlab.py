@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import sys
-import defusedxml.ElementTree as ElementTree
+import defusedxml.ElementTree as ElementTree  # type: ignore
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
