@@ -6,7 +6,10 @@ import pytest  # noqa: F401 # pylint: disable=unused-import
 from precommitmatlablint.find_matlab import (
     get_matlab_installs,
     MatlabHandle,
+    MatlabHandleList,
+    find_matlab,
 )
+from precommitmatlablint.return_code import ReturnCode
 
 
 @pytest.fixture(scope="module")
@@ -41,127 +44,128 @@ class TestFindMatlab:
         match = re.match(r"\d+\.\d+", version)
         assert match is not None
 
-    # def test_find_matlab_version(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     this_matlab_home = install_list[0]
-    #     matlab_exe: Path = this_matlab_home / "bin" / get_matlab_exe_name()
-    #     expected_version = query_matlab_version(matlab_exe)
-    #
-    #     found_matlab = find_matlab_version(expected_version, install_list, handle_list)
-    #     actual_version = query_matlab_version(found_matlab)
-    #     assert expected_version == actual_version
+    def test_find_matlab_version(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
 
-    # def test_find_matlab_release(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     this_matlab_home = install_list[0]
-    #     matlab_exe: Path = this_matlab_home / "bin" / get_matlab_exe_name()
-    #     expected_release = query_matlab_version(matlab_exe)
-    #
-    #     match = re.match(r"R\d+\w", this_matlab_home.stem)
-    #     assert match is not None
-    #     release_name = match.string
-    #
-    #     found_matlab = find_matlab_release(release_name, install_list, handle_list)
-    #     assert found_matlab is not None
-    #
-    #     actual_version = query_matlab_version(found_matlab)
-    #     assert expected_release == actual_version
+        this_matlab_home = install_list[0]
+        version_info_file = this_matlab_home / "VersionInfo.xml"
+        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
 
-    # def test_find_matlab_with_release(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     this_matlab_home = install_list[0]
-    #     matlab_exe: Path = this_matlab_home / "bin" / get_matlab_exe_name()
-    #     expected_release = query_matlab_version(matlab_exe)
-    #     match = re.match(r"R\d+\w", this_matlab_home.stem)
-    #     assert match is not None
-    #     release_name = match.string
-    #
-    #     found_matlab, return_code = find_matlab(matlab_release_name=release_name)
-    #     assert found_matlab is not None
-    #     assert return_code == ReturnCode.OK
-    #
-    #     actual_version = query_matlab_version(found_matlab)
-    #     assert expected_release == actual_version
+        matlab_handle = handle_list.find_version(expected_version)
+        assert matlab_handle is not None
 
-    # def test_find_matlab_with_version(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     this_matlab_home = install_list[0]
-    #     matlab_exe: Path = this_matlab_home / "bin" / get_matlab_exe_name()
-    #     expected_version = query_matlab_version(matlab_exe)
-    #
-    #     found_matlab, return_code = find_matlab(matlab_version=expected_version)
-    #     assert found_matlab is not None
-    #     assert return_code == ReturnCode.OK
-    #
-    #     actual_version = query_matlab_version(found_matlab)
-    #     assert expected_version == actual_version
+        assert expected_version == matlab_handle.version
+        assert expected_release == matlab_handle.release
 
-    # def test_find_matlab_with_path(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     this_matlab_home = install_list[0]
-    #     matlab_exe: Path = this_matlab_home / "bin" / get_matlab_exe_name()
-    #     expected_version = query_matlab_version(matlab_exe)
-    #
-    #     found_matlab, return_code = find_matlab(matlab_home_path=matlab_exe)
-    #     assert found_matlab is not None
-    #     assert return_code == ReturnCode.OK
-    #
-    #     actual_version = query_matlab_version(found_matlab)
-    #     assert expected_version == actual_version
+    def test_find_matlab_release(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
 
-    # def test_find_matlab_with_fake_path(self):
-    #     fake_matlab = Path().absolute() / "bin" / get_matlab_exe_name()
-    #     found_matlab, return_code = find_matlab(matlab_home_path=fake_matlab)
-    #     assert found_matlab is None
-    #     assert return_code == ReturnCode.FAIL
+        this_matlab_home = install_list[0]
+        version_info_file = this_matlab_home / "VersionInfo.xml"
+        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
 
-    # def test_fake_version_find_matlab_version(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     fake_version = "0.00"
-    #     found_matlab = find_matlab_version(fake_version, install_list, handle_list)
-    #
-    #     assert found_matlab is None
+        matlab_handle = handle_list.find_release(expected_release)
+        assert matlab_handle is not None
 
-    # def test_fake_release_find_matlab_release(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     fake_release = "R0000a"
-    #     found_matlab = find_matlab_release(fake_release, install_list, handle_list)
-    #
-    #     assert found_matlab is None
+        assert expected_version == matlab_handle.version
+        assert expected_release == matlab_handle.release
 
-    # def test_fake_version_find_matlab(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     fake_version = "0.00"
-    #     found_matlab, return_code = find_matlab(matlab_version=fake_version)
-    #
-    #     assert found_matlab is None
-    #     assert return_code == ReturnCode.FAIL
-    #
-    # def test_fake_release_find_matlab(self):
-    #     install_list = get_matlab_installs()
-    #     assert len(install_list) > 0
-    #
-    #     fake_release = "R0000a"
-    #     found_matlab, return_code = find_matlab(matlab_release_name=fake_release)
-    #
-    #     assert found_matlab is None
-    #     assert return_code == ReturnCode.FAIL
+    def test_find_matlab_with_release(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
+
+        this_matlab_home = install_list[0]
+        version_info_file = this_matlab_home / "VersionInfo.xml"
+        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+
+        found_matlab, return_code = find_matlab(matlab_release_name=expected_release)
+        assert found_matlab is not None
+        assert return_code == ReturnCode.OK
+
+        assert expected_release == found_matlab.release
+        assert expected_version == found_matlab.version
+
+    def test_find_matlab_with_version(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
+
+        this_matlab_home = install_list[0]
+        version_info_file = this_matlab_home / "VersionInfo.xml"
+        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+
+        found_matlab, return_code = find_matlab(matlab_version=expected_version)
+        assert found_matlab is not None
+        assert return_code == ReturnCode.OK
+
+        assert expected_version == found_matlab.version
+
+    def test_find_matlab_with_path(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
+
+        this_matlab_home = install_list[0]
+        version_info_file = this_matlab_home / "VersionInfo.xml"
+        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+
+        found_matlab, return_code = find_matlab(matlab_home_path=this_matlab_home)
+        assert found_matlab is not None
+        assert return_code == ReturnCode.OK
+
+        assert expected_version == found_matlab.version
+
+    def test_find_matlab_with_fake_path(self):
+        fake_matlab = Path().absolute()
+        found_matlab, return_code = find_matlab(matlab_home_path=fake_matlab)
+        assert found_matlab is None
+        assert return_code == ReturnCode.FAIL
+
+    def test_fake_version_find_matlab_version(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
+
+        fake_version = "0.00"
+        found_matlab = handle_list.find_version(fake_version)
+
+        assert found_matlab is None
+
+    def test_fake_release_find_matlab_release(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
+
+        fake_release = "R0000a"
+        found_matlab = handle_list.find_release(fake_release)
+
+        assert found_matlab is None
+
+    def test_fake_version_find_matlab(self):
+        fake_version = "0.00"
+        found_matlab, return_code = find_matlab(matlab_version=fake_version)
+
+        assert found_matlab is None
+        assert return_code == ReturnCode.FAIL
+
+    def test_fake_release_find_matlab(self):
+        fake_release = "R0000a"
+        found_matlab, return_code = find_matlab(matlab_release_name=fake_release)
+
+        assert found_matlab is None
+        assert return_code == ReturnCode.FAIL
 
     def test_read_version_info(self, data_folder_path: Path):
         version_info_file: Path = data_folder_path / "version_info" / "VersionInfo.xml"
