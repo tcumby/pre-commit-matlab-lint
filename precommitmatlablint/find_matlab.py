@@ -537,7 +537,7 @@ def find_matlab(
             # initializes, then add it to the MatlabHandleList
             exe_path: Path = MatlabHandle.construct_exe_path(matlab_home_path)
             test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path)
-            handle = test_handle if test_handle.is_initialized else None
+            handle = test_handle if test_handle.is_initialized() else None
             if handle is not None:
                 handle_list.append(handle)
 
