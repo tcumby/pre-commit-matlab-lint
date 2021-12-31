@@ -31,12 +31,37 @@ class TestFindMatlab:
             [Path(s, "bin", MatlabHandle.get_matlab_exe_name()).exists for s in install_list]
         )
 
+    def test_refresh(self):
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        assert handle.is_initialized()
+
+        # save the current values
+        expected_version = handle.version
+        expected_release = handle.release
+        expected_checksum = handle.checksum
+
+        # change the values
+        handle.version = ""
+        handle.release = ""
+        handle.checksum = ""
+
+        handle.refresh()
+
+        assert expected_checksum == handle.checksum
+        assert expected_version == handle.version
+        assert expected_release == handle.release
+
     def test_query_matlab_version(self):
         install_list = get_matlab_installs()
         assert len(install_list) > 0
 
         this_matlab_home = install_list[0]
-        matlab_exe: Path = this_matlab_home / "bin" / MatlabHandle.get_matlab_exe_name()
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
         assert handle.is_initialized() is True
         version, release, return_code = handle.query_version()
