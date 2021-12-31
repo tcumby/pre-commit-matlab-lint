@@ -230,6 +230,7 @@ class MatlabHandleList:
 
             with self.cache_file.open("w") as f:
                 yaml.safe_dump(data, f)
+                self.has_changes = False
 
     def load(self):
         self.clear()
@@ -251,6 +252,9 @@ class MatlabHandleList:
     def prune(self) -> None:
         """Remove handles to MATLAB installs that no longer exist on the machine"""
         remove_list: List[MatlabHandle] = [h for h in self.handles if not h.is_valid()]
+        if len(remove_list) > 0:
+            self.has_changes = True
+
         for handle in remove_list:
             self.remove(handle)
 
