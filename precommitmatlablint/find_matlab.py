@@ -387,10 +387,11 @@ def get_matlab_installs() -> List[Path]:
     matlab_home_paths: List[Path] = []
     root_path = get_matlab_root(this_platform)
     if "win32" == this_platform:
-        matlab_home_paths = [
-            d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
-        ]
-        matlab_home_paths = sorted(matlab_home_paths, reverse=True)
+        if root_path.exists():
+            matlab_home_paths = [
+                d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
+            ]
+            matlab_home_paths = sorted(matlab_home_paths, reverse=True)
         matlab_home_paths = sorted(
             list(set(sorted(matlab_home_paths + get_matlab_registry_installs()))), reverse=True
         )
@@ -400,10 +401,11 @@ def get_matlab_installs() -> List[Path]:
         ]
         matlab_home_paths = sorted(matlab_home_paths, reverse=True)
     elif "linux" == this_platform:
-        matlab_home_paths = [
-            d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
-        ]
-        matlab_home_paths = sorted(matlab_home_paths, reverse=True)
+        if root_path.exists():
+            matlab_home_paths = [
+                d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
+            ]
+            matlab_home_paths = sorted(matlab_home_paths, reverse=True)
 
     return matlab_home_paths
 
@@ -414,56 +416,59 @@ def get_matlab_registry_installs() -> List[Path]:
     """Get list of MATLAB home paths from the Windows registry."""
     matlab_home_paths: List[Path] = []
     hklm = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
-    mathworks_key = winreg.OpenKey(hklm, r"SOFTWARE\MathWorks")
+    try:
+        mathworks_key = winreg.OpenKey(hklm, r"SOFTWARE\MathWorks")
+        # This is how the "Mathworks" registry key and subkeys are structured
+        # HKLM\SOFTWARE\Mathworks
+        # |
+        # --MATLAB
+        #   |
+        #   --<version 1>
+        #   |
+        #   --<version 2>
+        #   ...
+        #   |
+        #   --<version N>
+        # |
+        # --<release 1>
+        #   |
+        #   --MATLAB <- value is <MATLAB HOME>/bin/<arch>
+        # |
+        # --<release 2>
+        # ...
+        # |
+        # --<release N>
 
-    # This is how the "Mathworks" registry key and subkeys are structured
-    # HKLM\SOFTWARE\Mathworks
-    # |
-    # --MATLAB
-    #   |
-    #   --<version 1>
-    #   |
-    #   --<version 2>
-    #   ...
-    #   |
-    #   --<version N>
-    # |
-    # --<release 1>
-    #   |
-    #   --MATLAB <- value is <MATLAB HOME>/bin/<arch>
-    # |
-    # --<release 2>
-    # ...
-    # |
-    # --<release N>
+        # To retrieve the subkeys to HKLM\SOFTWARE\Mathworks, we repeatedly call EnumKey until it throws
+        index = 0
+        subkey_names: List[str] = []
+        while True:
+            try:
+                subkey_names.append(winreg.EnumKey(mathworks_key, index))
+                index += 1
+            except OSError:
+                break
 
-    # To retrieve the subkeys to HKLM\SOFTWARE\Mathworks, we repeatedly call EnumKey until it throws
-    index = 0
-    subkey_names: List[str] = []
-    while True:
-        try:
-            subkey_names.append(winreg.EnumKey(mathworks_key, index))
-            index += 1
-        except OSError:
-            break
+        # Find the release names
+        release_names: List[str] = [s for s in subkey_names if re.search(r"R\d+\w", s) is not None]
+        for subkey_name in release_names:
+            try:
+                with winreg.OpenKey(mathworks_key, rf"{subkey_name}\MATLAB") as release_key:
+                    try:
+                        value, reg_type = winreg.QueryValueEx(release_key, "")
+                        if isinstance(value, str):
+                            # The path string stored in value is of the form "C:\\Program Files\\MATLAB\\R2021a\\bin\\win64"
+                            potential_path = Path(value)
+                            if potential_path.is_dir():
+                                matlab_home_paths.append(potential_path.parent.parent)
+                    except FileNotFoundError:
+                        pass
 
-    # Find the release names
-    release_names: List[str] = [s for s in subkey_names if re.search(r"R\d+\w", s) is not None]
-    for subkey_name in release_names:
-        try:
-            with winreg.OpenKey(mathworks_key, rf"{subkey_name}\MATLAB") as release_key:
-                try:
-                    value, reg_type = winreg.QueryValueEx(release_key, "")
-                    if isinstance(value, str):
-                        # The path string stored in value is of the form "C:\\Program Files\\MATLAB\\R2021a\\bin\\win64"
-                        potential_path = Path(value)
-                        if potential_path.is_dir():
-                            matlab_home_paths.append(potential_path.parent.parent)
-                except FileNotFoundError:
-                    pass
-
-        except FileNotFoundError:
-            pass
+            except FileNotFoundError:
+                pass
+    except FileNotFoundError:
+        # Likely the Mathworks sub-key does not exist
+        pass
 
     return sorted(matlab_home_paths)
 
