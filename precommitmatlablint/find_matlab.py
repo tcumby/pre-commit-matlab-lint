@@ -221,6 +221,9 @@ class MatlabHandleList:
 
         self.has_changes = False
 
+    def __len__(self) -> int:
+        return len(self.handles)
+
     def save(self):
         if self.has_changes:
             data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
@@ -262,9 +265,6 @@ class MatlabHandleList:
     def insert(self, index: int, handle: MatlabHandle) -> None:
         self.handles.insert(index, handle)
         self.has_changes = True
-
-    def len(self) -> int:
-        return len(self.handles)
 
     def clear(self) -> None:
         self.handles.clear()
