@@ -38,7 +38,7 @@ class TestFindMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = this_matlab_home / "bin" / MatlabHandle.get_matlab_exe_name()
         handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
-        assert handle.is_initialized is True
+        assert handle.is_initialized() is True
         version, release, return_code = handle.query_version()
         assert len(version) > 0
         match = re.match(r"\d+\.\d+", version)
