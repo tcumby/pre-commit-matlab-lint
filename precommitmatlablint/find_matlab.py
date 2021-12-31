@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import sys
-import defusedxml.ElementTree as ET
+import defusedxml.ElementTree as ElementTree
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
@@ -22,13 +22,12 @@ class MatlabHandle:
     checksum: str = ""
     version: str = ""
     release: str = ""
-    is_initialized: bool = False
 
     def __post_init__(self):
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
             self.version, self.release = MatlabHandle.read_version_info(
-                self.home_path / "VersionInfo.xml"
+                self.get_version_info_file()
             )
 
         if len(self.version) == 0 and len(self.release) == 0:
@@ -36,7 +35,12 @@ class MatlabHandle:
             self.version, self.release, _ = self.query_version()
 
         self.checksum = self.compute_checksum()
-        self.is_initialized = (
+
+    def get_version_info_file(self) -> Path:
+        return self.home_path / "VersionInfo.xml"
+
+    def is_initialized(self) -> bool:
+        return (
             self.is_valid()
             and len(self.version) > 0
             and len(self.release) > 0
@@ -135,7 +139,7 @@ class MatlabHandle:
         version: str = ""
         release: str = ""
         if ReturnCode.OK == return_code:
-            match = re.match(r"(?P<version>[\d+\.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
+            match = re.match(r"(?P<version>[\d+.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
             if match:
                 version = match.group("version")
                 release = match.group("release")
@@ -143,6 +147,13 @@ class MatlabHandle:
         return version, release, return_code
 
     def compute_checksum(self) -> str:
+        """Compute the sha256 hash of the MATLAB executable.
+        Returns
+        -------
+        str
+            The sha256 hash, if the executable exists, an empty string otherwise
+        """
+
         hasher = hashlib.sha256()
         checksum: str = ""
         if self.is_valid():
@@ -160,8 +171,17 @@ class MatlabHandle:
                 output[key] = str(value)
         return output
 
+    def refresh(self) -> None:
+        if self.is_valid():
+            self.checksum: str = self.compute_checksum()
+            version_info_file: Path = self.get_version_info_file()
+            if version_info_file.exists():
+                self.version, self.release = MatlabHandle.read_version_info(
+                    self.get_version_info_file()
+                )
+
     @classmethod
-    def contruct_exe_path(cls, home_path: Path) -> Path:
+    def construct_exe_path(cls, home_path: Path) -> Path:
         return home_path / "bin" / MatlabHandle.get_matlab_exe_name()
 
     @classmethod
@@ -170,7 +190,7 @@ class MatlabHandle:
         release: str = ""
 
         if version_info_path.exists():
-            tree = ET.parse(version_info_path)
+            tree = ElementTree.parse(version_info_path)
             root = tree.getroot()
             version = root.find("version").text
             release = root.find("release").text
@@ -233,19 +253,20 @@ class MatlabHandleList:
                 self.has_changes = False
 
     def load(self):
-        self.clear()
-        with self.cache_file.open("r") as f:
-            data = yaml.safe_load(f)
-            for element in data:
-                self.append(MatlabHandle.from_dict(element))
+        if self.cache_file.exists():
+            self.clear()
+            with self.cache_file.open("r") as f:
+                data = yaml.safe_load(f)
+                for element in data:
+                    self.append(MatlabHandle.from_dict(element))
 
-            self.has_changes = False
+                self.has_changes = False
 
     def update(self, search_list: List[Path]) -> None:
         """Add handles to new MATLAB installs"""
         for home_path in search_list:
             if self.find_home_path(home_path) is None:
-                exe_path = MatlabHandle.contruct_exe_path(home_path)
+                exe_path = MatlabHandle.construct_exe_path(home_path)
                 handle = MatlabHandle(home_path=home_path, exe_path=exe_path)
                 self.append(handle)
 
@@ -461,7 +482,8 @@ def get_matlab_registry_installs() -> List[Path]:
                     try:
                         value, reg_type = winreg.QueryValueEx(release_key, "")
                         if isinstance(value, str):
-                            # The path string stored in value is of the form "C:\\Program Files\\MATLAB\\R2021a\\bin\\win64"
+                            # The path string stored in value is of the form
+                            # "C:\\Program Files\\MATLAB\\R2021a\\bin\\win64"
                             potential_path = Path(value)
                             if potential_path.is_dir():
                                 matlab_home_paths.append(potential_path.parent.parent)
@@ -513,7 +535,7 @@ def find_matlab(
         if handle is None:
             # This must be an installation that our search path missed. Try to contruct a MatlabHandle and if it
             # initializes, then add it to the MatlabHandleList
-            exe_path: Path = MatlabHandle.contruct_exe_path(matlab_home_path)
+            exe_path: Path = MatlabHandle.construct_exe_path(matlab_home_path)
             test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path)
             handle = test_handle if test_handle.is_initialized else None
             if handle is not None:
