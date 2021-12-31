@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest  # noqa: F401 # pylint: disable=unused-import
 
@@ -55,6 +56,43 @@ class TestFindMatlab:
         assert expected_checksum == handle.checksum
         assert expected_version == handle.version
         assert expected_release == handle.release
+
+    def test_cache_file_creation(self):
+        with TemporaryDirectory() as temp_dir:
+            cache_file = Path(temp_dir) / "cache_file.yaml"
+            handle_list = MatlabHandleList(cache_file)
+            install_list = get_matlab_installs()
+            assert len(install_list) > 0
+            handle_list.update(install_list)
+            handle_list.save()
+
+            assert cache_file.exists()
+
+            handle_list2 = MatlabHandleList(cache_file)
+            handle_list2.load()
+            assert len(handle_list2) > 0
+
+    def test_handle_list_prune(self):
+        handle_list = MatlabHandleList()
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+        handle_list.update(install_list)
+
+        expected_length = len(handle_list)
+
+        # create a bogus MatlabHandle
+        fake_home = Path().absolute()
+        fake_exe = MatlabHandle.construct_exe_path(fake_home)
+        fake_handle = MatlabHandle(home_path=fake_home, exe_path=fake_exe)
+
+        handle_list.append(fake_handle)
+
+        assert len(handle_list) > expected_length
+
+        handle_list.prune()
+
+        assert expected_length == len(handle_list)
+        assert handle_list.has_changes
 
     def test_query_matlab_version(self):
         install_list = get_matlab_installs()
