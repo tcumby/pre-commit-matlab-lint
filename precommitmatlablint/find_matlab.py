@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import sys
-
+import defusedxml.ElementTree as ET
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
@@ -25,6 +25,12 @@ class MatlabHandle:
     is_initialized: bool = False
 
     def __post_init__(self):
+        if len(self.version) == 0 and len(self.release) == 0:
+            # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
+            self.version, self.release = MatlabHandle.read_version_info(
+                self.home_path / "VersionInfo.xml"
+            )
+
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
             self.version, self.release, _ = self.query_version()
@@ -157,6 +163,19 @@ class MatlabHandle:
     @classmethod
     def contruct_exe_path(cls, home_path: Path) -> Path:
         return home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+
+    @classmethod
+    def read_version_info(cls, version_info_path: Path) -> Tuple[str, str]:
+        version: str = ""
+        release: str = ""
+
+        if version_info_path.exists():
+            tree = ET.parse(version_info_path)
+            root = tree.getroot()
+            version = root.find("version").text
+            release = root.find("release").text
+
+        return version, release
 
     @classmethod
     def from_dict(cls, input_dict: Dict[str, str]) -> "MatlabHandle":
