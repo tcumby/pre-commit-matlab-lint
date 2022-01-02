@@ -37,6 +37,8 @@ class TestLintMatlab:
         fail_warnings,
     ):
         test_file = matlab_folder_path / "clean_function.m"
+        assert test_file.exists()
+
         install_list = get_matlab_installs()
         assert len(install_list) > 0
 
