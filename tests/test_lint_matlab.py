@@ -23,7 +23,19 @@ def handle_list(request):
 
 
 class TestLintMatlab:
-    def test_clean_function(self, matlab_folder_path, handle_list):
+    @pytest.mark.parametrize("enable_cyc", [True, False])
+    @pytest.mark.parametrize("enable_mod_cyc", [True, False])
+    @pytest.mark.parametrize("ignore_ok_pragmas", [True, False])
+    @pytest.mark.parametrize("fail_warnings", [True, False])
+    def test_clean_function(
+        self,
+        matlab_folder_path,
+        handle_list,
+        enable_cyc,
+        enable_mod_cyc,
+        ignore_ok_pragmas,
+        fail_warnings,
+    ):
         test_file = matlab_folder_path / "clean_function.m"
         install_list = get_matlab_installs()
         assert len(install_list) > 0
@@ -36,9 +48,10 @@ class TestLintMatlab:
         return_code: ReturnCode = validate_matlab(
             matlab_handle=handle,
             filepaths=[test_file],
-            enable_cyc=False,
-            enable_mod_cyc=False,
-            ignore_ok_pragmas=False,
+            fail_warnings=fail_warnings,
+            enable_cyc=enable_cyc,
+            enable_mod_cyc=enable_mod_cyc,
+            ignore_ok_pragmas=ignore_ok_pragmas,
             use_factory_default=False,
         )
 
