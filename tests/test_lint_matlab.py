@@ -1,0 +1,45 @@
+from tempfile import TemporaryDirectory
+
+import pytest  # noqa: F401 # pylint: disable=unused-import
+from pathlib import Path
+
+from precommitmatlablint.find_matlab import MatlabHandleList, get_matlab_installs, MatlabHandle
+from precommitmatlablint.lint_matlab import validate_matlab
+from precommitmatlablint.return_code import ReturnCode
+
+
+@pytest.fixture(scope="module")
+def matlab_folder_path(request) -> Path:
+    root_dir = Path(__file__).parent
+    return root_dir / "data" / "matlab"
+
+
+@pytest.fixture(scope="module")
+def handle_list(request):
+    with TemporaryDirectory() as temp_dir:
+        cache_file = Path(temp_dir) / "cache_file.yaml"
+        handle_list = MatlabHandleList(cache_file)
+        yield handle_list
+
+
+class TestLintMatlab:
+    def test_clean_function(self, matlab_folder_path, handle_list):
+        test_file = matlab_folder_path / "clean_function.m"
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        assert handle.is_initialized()
+
+        return_code: ReturnCode = validate_matlab(
+            matlab_handle=handle,
+            filepaths=[test_file],
+            enable_cyc=False,
+            enable_mod_cyc=False,
+            ignore_ok_pragmas=False,
+            use_factory_default=False,
+        )
+
+        assert ReturnCode.OK == return_code
