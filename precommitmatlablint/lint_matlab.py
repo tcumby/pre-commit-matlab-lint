@@ -54,25 +54,25 @@ def construct_matlab_script(
     """
     file_list = [f"'{str(f)}'" for f in filepaths]
 
-    level_option = "-m0" if fail_warnings else "-m2"
-    command: List = [level_option, "-id", "-struct"]
+    level_option = "'-m0'" if fail_warnings else "'-m2'"
+    command: List = [level_option, "'-id'", "'-struct'"]
     if enable_cyc:
-        command.append("-cyc")
+        command.append("'-cyc'")
 
     if enable_mod_cyc:
-        command.append("-modcyc")
+        command.append("'-modcyc'")
 
     if ignore_ok_pragmas:
-        command.append("-notok")
+        command.append("'-notok'")
 
     if use_factory_default:
-        command.append("-config=factory")
+        command.append("'-config=factory'")
     elif checkcode_config_file:
-        command.append(f"-config={str(checkcode_config_file)}")
+        command.append(f"'-config={str(checkcode_config_file)}'")
 
     command = command + file_list
     command_string: str = ", ".join(command)
-    return f"clc;disp(jsonencode(checkcode({command_string})));"
+    return f"clc;disp(jsonencode(checkcode({command_string})));quit;"
 
 
 def validate_matlab(
