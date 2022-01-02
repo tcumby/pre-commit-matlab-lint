@@ -129,6 +129,9 @@ def validate_matlab(
         if len(filepaths) == 1:
             this_file = filepaths[0]
             linter_results: List[Dict[str, Any]] = json.loads(stdout)
+            if isinstance(linter_results, dict):
+                linter_results = [linter_results]
+
             return_code = inspect_linter_result(linter_results)
             print_linter_result(this_file, linter_results)
 
@@ -136,6 +139,9 @@ def validate_matlab(
             linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
             for index, this_file in enumerate(filepaths):
                 this_linter_results = linter_results_list[index]
+                if isinstance(this_linter_results, dict):
+                    this_linter_results = [this_linter_results]
+
                 return_code = inspect_linter_result(this_linter_results)
                 print_linter_result(this_file, this_linter_results)
 
