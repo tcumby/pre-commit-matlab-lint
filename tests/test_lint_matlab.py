@@ -58,3 +58,39 @@ class TestLintMatlab:
         )
 
         assert ReturnCode.OK == return_code
+
+    @pytest.mark.parametrize("enable_cyc", [True, False])
+    @pytest.mark.parametrize("enable_mod_cyc", [True, False])
+    @pytest.mark.parametrize("ignore_ok_pragmas", [True, False])
+    @pytest.mark.parametrize("fail_warnings", [True, False])
+    def test_invalid_char(
+        self,
+        matlab_folder_path,
+        handle_list,
+        enable_cyc,
+        enable_mod_cyc,
+        ignore_ok_pragmas,
+        fail_warnings,
+    ):
+        test_file = matlab_folder_path / "invalid_char.m"
+        assert test_file.exists()
+
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        assert handle.is_initialized()
+
+        return_code: ReturnCode = validate_matlab(
+            matlab_handle=handle,
+            filepaths=[test_file],
+            fail_warnings=fail_warnings,
+            enable_cyc=enable_cyc,
+            enable_mod_cyc=enable_mod_cyc,
+            ignore_ok_pragmas=ignore_ok_pragmas,
+            use_factory_default=False,
+        )
+
+        assert ReturnCode.FAIL == return_code
