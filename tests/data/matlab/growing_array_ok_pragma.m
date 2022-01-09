@@ -1,4 +1,4 @@
-function anArray = growing_array()
+function anArray = growing_array_ok_pragma()
 
 anArray = [];
 for idx=1:100
