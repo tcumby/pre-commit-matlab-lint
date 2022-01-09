@@ -265,7 +265,7 @@ class TestLintMatlab:
     @pytest.mark.parametrize(
         "fail_warnings,expected", [(True, ReturnCode.FAIL), (False, ReturnCode.OK)]
     )
-    def test_growing_array(
+    def test_fail_warnings(
         self,
         matlab_folder_path: Path,
         handle_list,
