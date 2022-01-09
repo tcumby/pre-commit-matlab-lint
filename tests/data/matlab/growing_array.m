@@ -1,4 +1,4 @@
-function out = growing_array()
+function anArray = growing_array()
 
 anArray = [];
 for idx=1:100
