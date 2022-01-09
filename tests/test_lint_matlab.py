@@ -295,3 +295,36 @@ class TestLintMatlab:
         )
 
         assert expected == return_code
+
+    @pytest.mark.parametrize(
+        "ignore_ok_pragmas,expected", [(True, ReturnCode.OK), (False, ReturnCode.FAIL)]
+    )
+    def test_ignore_ok_pragmas(
+        self,
+        matlab_folder_path: Path,
+        handle_list,
+        ignore_ok_pragmas: bool,
+        expected: ReturnCode,
+    ):
+        test_file = matlab_folder_path / "growing_array_ok_pragma.m"
+        assert test_file.exists()
+
+        install_list = get_matlab_installs()
+        assert len(install_list) > 0
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        assert handle.is_initialized()
+
+        return_code: ReturnCode = validate_matlab(
+            matlab_handle=handle,
+            filepaths=[test_file],
+            fail_warnings=True,
+            enable_cyc=True,
+            enable_mod_cyc=True,
+            ignore_ok_pragmas=ignore_ok_pragmas,
+            use_factory_default=False,
+        )
+
+        assert expected == return_code
