@@ -297,7 +297,7 @@ class TestLintMatlab:
         assert expected == return_code
 
     @pytest.mark.parametrize(
-        "ignore_ok_pragmas,expected", [(True, ReturnCode.OK), (False, ReturnCode.FAIL)]
+        "ignore_ok_pragmas,expected", [(True, ReturnCode.FAIL), (False, ReturnCode.OK)]
     )
     def test_ignore_ok_pragmas(
         self,
