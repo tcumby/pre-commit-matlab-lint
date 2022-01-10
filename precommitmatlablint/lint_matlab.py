@@ -249,8 +249,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     filepaths: List[Path] = []
-    if args.filenames:
-        filepaths = args.filenames
+    if args.filepaths:
+        filepaths = args.filepaths
 
     matlab_home_path: Optional[Path] = extract_file_path_option(args.matlab_home_path)
 
