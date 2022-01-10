@@ -137,13 +137,21 @@ def validate_matlab(
 
         elif len(filepaths) > 1:
             linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
+            return_codes: List[ReturnCode] = []
             for index, this_file in enumerate(filepaths):
                 this_linter_results = linter_results_list[index]
                 if isinstance(this_linter_results, dict):
                     this_linter_results = [this_linter_results]
 
                 return_code = inspect_linter_result(this_linter_results)
+                return_codes.append(return_code)
                 print_linter_result(this_file, this_linter_results)
+
+            return_code = (
+                ReturnCode.FAIL
+                if any([r == ReturnCode.FAIL for r in return_codes])
+                else ReturnCode.OK
+            )
 
     except json.JSONDecodeError as err:
         return_code = ReturnCode.FAIL
