@@ -204,7 +204,7 @@ class TestLintMatlab:
             ["clean_function.m", "clean_function.m", "invalid_char.m"],
         ],
     )
-    def one_bad_file(
+    def test_one_bad_file(
         self,
         matlab_folder_path: Path,
         handle_list,
@@ -251,7 +251,7 @@ class TestLintMatlab:
             ["clean_function.m", "clean_function.m", "invalid_char.m"],
         ],
     )
-    def one_bad_file_through_main(
+    def test_one_bad_file_through_main(
         self,
         matlab_folder_path: Path,
         handle_list,
@@ -293,7 +293,7 @@ class TestLintMatlab:
             ["invalid_char.m", "clean_function.m", "invalid_char.m"],
         ],
     )
-    def one_good_file(
+    def test_one_good_file(
         self,
         matlab_folder_path: Path,
         handle_list,
@@ -339,7 +339,7 @@ class TestLintMatlab:
             ["invalid_char.m", "clean_function.m", "invalid_char.m"],
         ],
     )
-    def one_good_file_through_main(
+    def test_one_good_file_through_main(
         self,
         matlab_folder_path: Path,
         handle_list,
