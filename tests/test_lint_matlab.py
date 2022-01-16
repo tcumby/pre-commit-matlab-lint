@@ -65,7 +65,8 @@ class TestLintMatlab:
         assert test_file.exists()
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -101,7 +102,8 @@ class TestLintMatlab:
         assert test_file.exists()
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -137,7 +139,8 @@ class TestLintMatlab:
         assert test_file.exists()
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -173,7 +176,8 @@ class TestLintMatlab:
         assert test_file.exists()
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -220,7 +224,8 @@ class TestLintMatlab:
         assert all([s.exists() for s in filepaths])
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -266,7 +271,8 @@ class TestLintMatlab:
         assert all([s.exists() for s in filepaths])
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -308,7 +314,8 @@ class TestLintMatlab:
         assert all([s.exists() for s in filepaths])
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -354,7 +361,8 @@ class TestLintMatlab:
         assert all([s.exists() for s in filepaths])
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -385,7 +393,8 @@ class TestLintMatlab:
         assert test_file.exists()
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -418,7 +427,8 @@ class TestLintMatlab:
         assert test_file.exists()
 
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)

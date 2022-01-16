@@ -38,7 +38,8 @@ def handle_list(request):
 class TestFindMatlab:
     def test_get_matlab_installs(self):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         # Check that what is returned are all folder paths
         assert all([s.is_dir() and s.exists() for s in install_list])
@@ -50,7 +51,8 @@ class TestFindMatlab:
 
     def test_refresh(self):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -75,7 +77,9 @@ class TestFindMatlab:
 
     def test_cache_file_creation(self, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
+
         handle_list.update(install_list)
         handle_list.save()
 
@@ -87,7 +91,9 @@ class TestFindMatlab:
 
     def test_handle_list_prune(self, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
+
         handle_list.update(install_list)
 
         expected_length = len(handle_list)
@@ -108,7 +114,8 @@ class TestFindMatlab:
 
     def test_query_matlab_version(self):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
@@ -121,7 +128,8 @@ class TestFindMatlab:
 
     def test_find_matlab_version(self, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         this_matlab_home = install_list[0]
@@ -136,7 +144,8 @@ class TestFindMatlab:
 
     def test_find_matlab_release(self, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         this_matlab_home = install_list[0]
@@ -151,7 +160,8 @@ class TestFindMatlab:
 
     def test_find_matlab_with_release(self, cleanup_default_cache_file, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         this_matlab_home = install_list[0]
@@ -167,7 +177,8 @@ class TestFindMatlab:
 
     def test_find_matlab_with_version(self, cleanup_default_cache_file, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         this_matlab_home = install_list[0]
@@ -182,7 +193,8 @@ class TestFindMatlab:
 
     def test_find_matlab_with_path(self, cleanup_default_cache_file, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         this_matlab_home = install_list[0]
@@ -203,7 +215,8 @@ class TestFindMatlab:
 
     def test_fake_version_find_matlab_version(self, cleanup_default_cache_file, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         fake_version = "0.00"
@@ -213,7 +226,8 @@ class TestFindMatlab:
 
     def test_fake_release_find_matlab_release(self, handle_list):
         install_list = get_matlab_installs()
-        assert len(install_list) > 0
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
         fake_release = "R0000a"
