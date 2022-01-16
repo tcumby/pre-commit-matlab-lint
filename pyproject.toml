@@ -52,7 +52,7 @@ repository = "https://github.com/ty.cumby/pre-commit-matlab-lint"
 # by `tyrannosaurus sync`, if you choose to use that.
 # The language, intended audience, OS, environment, and topics are not.
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Natural Language :: English",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
