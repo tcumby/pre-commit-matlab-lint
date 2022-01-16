@@ -360,7 +360,7 @@ strict_optional = true
 # https://github.com/PyCQA/pydocstyle/issues/447
 
 [tool.bandit]
-skip = "B404,B603"
+skips = ["B404", "B603"]
 
 [tool.pycodestyle]
 max-line-length = 100
