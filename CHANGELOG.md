@@ -7,4 +7,11 @@ and [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 ## [0.1.0] - 2021-11-28
 
 ### Added:
+
 - Stub files.
+
+## [1.0.0] - 2022-01-16
+
+### Added:
+
+- Linting via a detected MATLAB instance is functioning
