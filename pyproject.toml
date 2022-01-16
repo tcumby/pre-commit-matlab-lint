@@ -33,7 +33,7 @@ name = "precommitmatlablint"
 # E.g. This might be "1.2.13", and the GitHub release will be "v1.2.13".
 # Although semantic versioning allows for build tags (metadata),
 # not all tools are compatible with it, so avoid it if you can.
-version = "0.1.0"
+version = "1.0.0"
 
 # TODO: Set the description and keywords here
 description = "A pre-commit hook to validate MATLAB code."
@@ -106,6 +106,7 @@ python                   = "^3.8"
 # Note: We don't use flake8-bandit because it appears to be unmaintained
 bandit                   = "^1.7"
 coverage                 = {extras = ["toml"], version = "^6.0"}
+defusedxml               = "^0.7"
 flake8                   = "^3.9"
 flake8-bugbear           = ">=21"
 flake8-docstrings        = "^1.5"
@@ -113,6 +114,7 @@ pre-commit               = "^2.16"
 pre-commit-hooks         = "^4.1"
 pytest                   = "^6.2"
 pytest-cov               = "^3.0"
+pytest-mock              = "^3.61"
 sphinx                   = "^4.0"
 sphinx-autoapi           = "^1.5"
 sphinx-copybutton        = "^0.4"
