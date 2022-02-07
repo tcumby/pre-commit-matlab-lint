@@ -244,7 +244,7 @@ class MatlabHandleList:
         if cache_file:
             self.cache_file = cache_file
         else:
-            self.cache_file = Path("matlab_info_cache.yaml")
+            self.cache_file = Path(Path.home(), ".pre-commit-matlab-lint.matlab-info-cache.yaml")
 
         self.has_changes = False
 
