@@ -95,6 +95,7 @@ lint-matlab = "precommitmatlablint.lint_matlab:main"
 python                   = "^3.8"
 defusedxml               = "^0.7"
 requests                 = "^2.0"
+pyyaml                   = "^6.0"
 
 [tool.poetry.dev-dependencies]
 # TODO Remove build dependencies you don't want (like xdoctest, perhaps)
