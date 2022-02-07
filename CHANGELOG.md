@@ -15,3 +15,11 @@ and [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 ### Added:
 
 - Linting via a detected MATLAB instance is functioning
+
+## [1.0.1] - 2022-02-07
+
+### Added:
+
+- Changed how the file path to the MATLAB executables are constructed
+- Changed the MATLAB info cache file to be populated in the user's HOME directory
+- Changed the MATLAB info cache file's name to be more easily attributed to this pre-commit hook

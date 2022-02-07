@@ -33,7 +33,7 @@ name = "precommitmatlablint"
 # E.g. This might be "1.2.13", and the GitHub release will be "v1.2.13".
 # Although semantic versioning allows for build tags (metadata),
 # not all tools are compatible with it, so avoid it if you can.
-version = "1.0.0"
+version = "1.0.1"
 
 # TODO: Set the description and keywords here
 description = "A pre-commit hook to validate MATLAB code."
