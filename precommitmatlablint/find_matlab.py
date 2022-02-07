@@ -182,7 +182,7 @@ class MatlabHandle:
 
     @classmethod
     def construct_exe_path(cls, home_path: Path) -> Path:
-        return home_path / "bin" / MatlabHandle.get_matlab_exe_name()
+        return home_path / "bin" / MatlabHandle.get_architecture_folder_name() / MatlabHandle.get_matlab_exe_name()
 
     @classmethod
     def read_version_info(cls, version_info_path: Path) -> Tuple[str, str]:
@@ -226,6 +226,13 @@ class MatlabHandle:
         matlab_exe: str = "matlab.exe" if sys.platform == "win32" else "matlab"
         return matlab_exe
 
+    @classmethod
+    def get_architecture_folder_name(cls) -> str:
+        """Return the architecture folder name used by Mathworks"""
+        arch_folder_names = {'win32': 'win64',
+                             'darwin': 'maci64',
+                             'linux': 'glnxa64'}
+        return arch_folder_names.get(sys.platform, '')
 
 class MatlabHandleList:
     handles: List[MatlabHandle]
