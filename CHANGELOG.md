@@ -29,3 +29,9 @@ and [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 ### Added:
 
 - Minor performance improvement to only interrogate the system for all MATLAB installs if nothing is cached
+
+## [1.0.3] - 2022-02-08
+
+### Added:
+
+- Properly handling the case when MATLAB finds no linter errors or warnings
