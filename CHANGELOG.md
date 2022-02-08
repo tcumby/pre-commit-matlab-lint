@@ -23,3 +23,9 @@ and [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 - Changed how the file path to the MATLAB executables are constructed
 - Changed the MATLAB info cache file to be populated in the user's HOME directory
 - Changed the MATLAB info cache file's name to be more easily attributed to this pre-commit hook
+
+## [1.0.2] - 2022-02-07
+
+### Added:
+
+- Minor performance improvement to only interrogate the system for all MATLAB installs if nothing is cached

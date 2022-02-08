@@ -8,10 +8,10 @@ FROM python:3.10.2
 
 # See https://github.com/opencontainers/image-spec/blob/master/annotations.md
 LABEL name="pre-commit-matlab-lint"
-LABEL version="1.0.1"
+LABEL version="1.0.2"
 LABEL vendor="ty.cumby"
 LABEL org.opencontainers.image.title="pre-commit-matlab-lint"
-LABEL org.opencontainers.image.version="1.0.1"
+LABEL org.opencontainers.image.version="1.0.2"
 LABEL org.opencontainers.image.url="https://github.com/ty.cumby/pre-commit-matlab-lint"
 LABEL org.opencontainers.image.documentation="https://github.com/ty.cumby/pre-commit-matlab-lint"
 
