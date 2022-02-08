@@ -182,7 +182,12 @@ class MatlabHandle:
 
     @classmethod
     def construct_exe_path(cls, home_path: Path) -> Path:
-        return home_path / "bin" / MatlabHandle.get_architecture_folder_name() / MatlabHandle.get_matlab_exe_name()
+        return (
+            home_path
+            / "bin"
+            / MatlabHandle.get_architecture_folder_name()
+            / MatlabHandle.get_matlab_exe_name()
+        )
 
     @classmethod
     def read_version_info(cls, version_info_path: Path) -> Tuple[str, str]:
@@ -229,10 +234,9 @@ class MatlabHandle:
     @classmethod
     def get_architecture_folder_name(cls) -> str:
         """Return the architecture folder name used by Mathworks"""
-        arch_folder_names = {'win32': 'win64',
-                             'darwin': 'maci64',
-                             'linux': 'glnxa64'}
-        return arch_folder_names.get(sys.platform, '')
+        arch_folder_names = {"win32": "win64", "darwin": "maci64", "linux": "glnxa64"}
+        return arch_folder_names.get(sys.platform, "")
+
 
 class MatlabHandleList:
     handles: List[MatlabHandle]
@@ -534,7 +538,9 @@ def find_matlab(
 
     handle_list: MatlabHandleList = MatlabHandleList(cache_file)
     handle_list.load()
-    handle_list.update(get_matlab_installs())
+    if len(handle_list) == 0:
+        # If we haven't previously cached any installs, go find all that are present on the system
+        handle_list.update(get_matlab_installs())
 
     handle: Optional[MatlabHandle] = None
     if matlab_home_path is not None:
