@@ -591,12 +591,12 @@ def find_matlab(
             handle = handle_list.find_release(matlab_release_name)
 
         if matlab_version is not None:
-            logger.info(f'Attemp')
+            logger.info(f'Attempting to locate a handle to MATLAB {matlab_version}')
             handle = handle_list.find_version(matlab_version)
 
     logger.info(f'Saving MATLAB handle list to {handle_list.cache_file}')
     handle_list.save()
 
     return_code = ReturnCode.OK if handle is not None else ReturnCode.FAIL
-    logger.info(f'MATLAB handle found: {return_code}')
+    logger.info(f'MATLAB handle found: {return_code.name}')
     return handle, return_code
