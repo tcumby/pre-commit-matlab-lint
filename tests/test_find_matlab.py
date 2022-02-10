@@ -1,3 +1,4 @@
+import logging
 import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -258,3 +259,15 @@ class TestFindMatlab:
 
         assert version == "1.2.3.4"
         assert release == "R1234a"
+
+    def test_query_version(self):
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        handle_list = MatlabHandleList(logger=logger)
+        handle_list.update(get_matlab_installs())
+
+        handle: MatlabHandle
+        for handle in handle_list.handles:
+            version, release_name, return_code = handle.query_version()
+            assert len(version) > 0, f"Failed to get version for {handle.home_path}"
+            assert len(release_name) > 0, f"Failed to get release name for {handle.home_path}"
