@@ -245,7 +245,7 @@ class MatlabHandleList:
     has_changes: bool
     __logger: logging.Logger
 
-    def __init__(self, cache_file: Optional[Path] = None, logger: logging.Logger = logging.getLogger(__name__)):
+    def __init__(self, cache_file: Optional[Path] = None, logger: Optional[logging.Logger] = None):
         self.handles = []
         if cache_file:
             self.cache_file = cache_file
@@ -253,7 +253,10 @@ class MatlabHandleList:
             self.cache_file = Path(Path.home(), ".pre-commit-matlab-lint.matlab-info-cache.yaml")
 
         self.has_changes = False
-        self.__logger = logger
+        if logger:
+            self.__logger = logger
+        else:
+            self.__logger = logging.getLogger(__name__)
 
     def __len__(self) -> int:
         return len(self.handles)
@@ -266,13 +269,13 @@ class MatlabHandleList:
             data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
 
             with self.cache_file.open("w") as f:
-                self.__logger.debug(f'Saving MATLAB handle list to {self.cache_file}')
+                self.__logger.debug(f"Saving MATLAB handle list to {self.cache_file}")
                 yaml.safe_dump(data, f)
                 self.has_changes = False
 
     def load(self):
         if self.cache_file.exists():
-            self.__logger.debug(f'Cache file {self.cache_file} exists.')
+            self.__logger.debug(f"Cache file {self.cache_file} exists.")
             self.clear()
             with self.cache_file.open("r") as f:
                 data = yaml.safe_load(f)
@@ -285,7 +288,7 @@ class MatlabHandleList:
         """Add handles to new MATLAB installs"""
         for home_path in search_list:
             if self.find_home_path(home_path) is None:
-                self.__logger.info(f'Found new MATLAB installation at {home_path}')
+                self.__logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)
                 handle = MatlabHandle(home_path=home_path, exe_path=exe_path)
                 self.append(handle)
@@ -300,17 +303,17 @@ class MatlabHandleList:
             self.remove(handle)
 
     def append(self, handle: MatlabHandle):
-        self.__logger.debug(f'Adding the MATLAB handle for home path {handle.home_path}')
+        self.__logger.debug(f"Adding the MATLAB handle for home path {handle.home_path}")
         self.handles.append(handle)
         self.has_changes = True
 
     def remove(self, handle: MatlabHandle):
-        self.__logger.debug(f'Removing the MATLAB handle for home path {handle.home_path}')
+        self.__logger.debug(f"Removing the MATLAB handle for home path {handle.home_path}")
         self.handles.remove(handle)
         self.has_changes = True
 
     def insert(self, index: int, handle: MatlabHandle) -> None:
-        self.__logger.debug(f'Inserting the MATLAB handle for home path {handle.home_path}')
+        self.__logger.debug(f"Inserting the MATLAB handle for home path {handle.home_path}")
         self.handles.insert(index, handle)
         self.has_changes = True
 
@@ -334,10 +337,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if release_name.lower() == h.release.lower()]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f'Handle for MATLAB release {release_name} found.')
+            self.__logger.info(f"Handle for MATLAB release {release_name} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f'Handle for MATLAB release name {release_name} not found.')
+            self.__logger.warning(f"Handle for MATLAB release name {release_name} not found.")
 
         return handle
 
@@ -359,10 +362,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if version in h.version]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f'Handle for MATLAB version {version} found.')
+            self.__logger.info(f"Handle for MATLAB version {version} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f'Handle for MATLAB version {version} not found.')
+            self.__logger.warning(f"Handle for MATLAB version {version} not found.")
 
         return handle
 
@@ -384,10 +387,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if matlab_home_path == h.home_path]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f'Handle for MATLAB at {matlab_home_path} found.')
+            self.__logger.info(f"Handle for MATLAB at {matlab_home_path} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f'Handle for MATLAB at {matlab_home_path} not found')
+            self.__logger.warning(f"Handle for MATLAB at {matlab_home_path} not found")
 
         return handle
 
@@ -409,10 +412,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if matlab_exe_path == h.exe_path]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f'Handle for MATLAB at {matlab_exe_path} found.')
+            self.__logger.info(f"Handle for MATLAB at {matlab_exe_path} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f'Handle for MATLAB at {matlab_exe_path} not found.')
+            self.__logger.warning(f"Handle for MATLAB at {matlab_exe_path} not found.")
 
         return handle
 
@@ -543,7 +546,7 @@ def find_matlab(
     matlab_version: Optional[str] = None,
     matlab_release_name: Optional[str] = None,
     cache_file: Optional[Path] = None,
-    logger: logging.Logger = logging.getLogger(__name__)
+    logger: Optional[logging.Logger] = None,
 ) -> Tuple[Optional[MatlabHandle], ReturnCode]:
     """Find the path to a MATLAB executable by providing a path for validation, release name, or version.
 
@@ -567,22 +570,24 @@ def find_matlab(
                     A handle to a MATLAB instance
     return_code: ReturnCode
     """
+    if logger is None:
+        logger = logging.getLogger(__name__)
 
     handle_list: MatlabHandleList = MatlabHandleList(cache_file=cache_file, logger=logger)
     handle_list.load()
     if len(handle_list) == 0:
         # If we haven't previously cached any installs, go find all that are present on the system
-        logger.info('No prior MATLAB installs have been cached.')
+        logger.info("No prior MATLAB installs have been cached.")
         handle_list.update(get_matlab_installs())
 
     handle: Optional[MatlabHandle] = None
     if matlab_home_path is not None:
-        logger.info(f'MATLAB home path {matlab_home_path} exists')
+        logger.info(f"MATLAB home path {matlab_home_path} exists")
         handle = handle_list.find_home_path(matlab_home_path)
         if handle is None:
             # This must be an installation that our search path missed. Try to contruct a MatlabHandle and if it
             # initializes, then add it to the MatlabHandleList
-            logger.info(f'The MATLAB interpreter has not been cached previously.')
+            logger.info("The MATLAB interpreter has not been cached previously.")
             exe_path: Path = MatlabHandle.construct_exe_path(matlab_home_path)
             test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path)
             handle = test_handle if test_handle.is_initialized() else None
@@ -591,16 +596,16 @@ def find_matlab(
 
     else:
         if matlab_release_name is not None:
-            logger.info(f'Attempting to locate a handle to MATLAB {matlab_release_name}')
+            logger.info(f"Attempting to locate a handle to MATLAB {matlab_release_name}")
             handle = handle_list.find_release(matlab_release_name)
 
         if matlab_version is not None:
-            logger.info(f'Attempting to locate a handle to MATLAB {matlab_version}')
+            logger.info(f"Attempting to locate a handle to MATLAB {matlab_version}")
             handle = handle_list.find_version(matlab_version)
 
-    logger.info(f'Saving MATLAB handle list to {handle_list.cache_file}')
+    logger.info(f"Saving MATLAB handle list to {handle_list.cache_file}")
     handle_list.save()
 
     return_code = ReturnCode.OK if handle is not None else ReturnCode.FAIL
-    logger.info(f'MATLAB handle found: {return_code.name}')
+    logger.info(f"MATLAB handle found: {return_code.name}")
     return handle, return_code

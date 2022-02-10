@@ -85,7 +85,7 @@ def validate_matlab(
     ignore_ok_pragmas: bool,
     use_factory_default: bool,
     checkcode_config_file: Optional[Path] = None,
-    logger: logging.Logger = logging.getLogger(__name__),
+    logger: Optional[logging.Logger] = None,
 ) -> ReturnCode:
     """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
@@ -113,6 +113,8 @@ def validate_matlab(
     -------
     ReturnCode
     """
+    if logger is None:
+        logger = logging.getLogger(__name__)
 
     matlab_script: str = construct_matlab_script(
         filepaths,
@@ -126,14 +128,14 @@ def validate_matlab(
 
     print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
     stdout, return_code = matlab_handle.run(matlab_script)
-    logger.debug(f'MATLAB stdout: {stdout}')
-    logger.debug(f'MATLAB return code: {return_code}')
+    logger.debug(f"MATLAB stdout: {stdout}")
+    logger.debug(f"MATLAB return code: {return_code}")
     try:
         if len(filepaths) == 1:
             this_file = filepaths[0]
 
             if len(stdout) > 0:
-                logger.info('MATLAB returned linter warnings and/or errors.')
+                logger.info("MATLAB returned linter warnings and/or errors.")
                 linter_results: List[Dict[str, Any]] = json.loads(stdout)
                 if isinstance(linter_results, dict):
                     linter_results = [linter_results]
@@ -142,12 +144,12 @@ def validate_matlab(
                 print_linter_result(this_file, linter_results)
             else:
                 # If there is no stdout from MATLAB, then there were no errors
-                logger.info('No results were returned from MATLAB')
+                logger.info("No results were returned from MATLAB")
                 return_code = ReturnCode.OK
 
         elif len(filepaths) > 1:
             if len(stdout) > 0:
-                logger.info('MATLAB returned linter warnings and/or errors.')
+                logger.info("MATLAB returned linter warnings and/or errors.")
                 linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
                 return_codes: List[ReturnCode] = []
                 for index, this_file in enumerate(filepaths):
@@ -166,14 +168,14 @@ def validate_matlab(
                 )
             else:
                 # If there is no stdout from MATLAB, then there were no errors
-                logger.info('No results were returned from MATLAB')
+                logger.info("No results were returned from MATLAB")
                 return_code = ReturnCode.OK
 
     except json.JSONDecodeError as err:
         return_code = ReturnCode.FAIL
         logger.error(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
 
-    logger.info(f'MATLAB lint result: {return_code}')
+    logger.info(f"MATLAB lint result: {return_code}")
     return return_code
 
 
@@ -274,13 +276,28 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         help="Ignore any checkcode config file and use factory default settings",
     )
 
-    parser.add_argument('--logging-level', action="store", help="The logging.Level value to set.", default=logging.WARN, type=int)
+    parser.add_argument(
+        "--logging-level",
+        action="store",
+        help="The logging.Level value to set.",
+        default=logging.WARNING,
+        type=int,
+    )
     parser.add_argument("filepaths", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
+    # Set the logging level
+    logger.setLevel(args.logging_level)
+
+    logger.info(args)
     filepaths: List[Path] = []
     if args.filepaths:
         filepaths = args.filepaths
+        logger.info("Supplied files:")
+        for file in filepaths:
+            logger.info(f"\t{file}")
+    else:
+        logger.info("No files were supplied.")
 
     matlab_home_path: Optional[Path] = extract_file_path_option(args.matlab_home_path)
 
@@ -295,9 +312,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ignore_ok_pragmas: bool = args.ignore_ok_pragmas
     fail_warnings: bool = args.treat_warning_as_error
     use_factory_default: bool = args.use_default_checkcode_config
-
-    # Set the logging level
-    logger.setLevel(args.logging_level)
 
     matlab_handle, return_code = find_matlab(
         matlab_home_path=matlab_home_path,
