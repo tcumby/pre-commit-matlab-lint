@@ -292,7 +292,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     logger.info(args)
     filepaths: List[Path] = []
     if args.filepaths:
-        filepaths = args.filepaths
+        filepaths = [Path(f).resolve() for f in args.filepaths]
         logger.info("Supplied files:")
         for file in filepaths:
             logger.info(f"\t{file}")
