@@ -37,14 +37,14 @@ repos:
       - id: check-yaml
         exclude: ^recipes/.*
     repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
 
   # --- Commit msg checks ---
   - hooks:
       - id: commitizen
         stages: ["commit-msg"]
     repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.18.1
+    rev: v2.20.5
 
   # --- Strip output from .ipynb files ---
   # - hooks:
@@ -61,19 +61,13 @@ repos:
   - hooks:
       - id: black
     repo: https://github.com/psf/black
-    rev: 21.9b0
+    rev: 22.1.0
   - repo: https://github.com/asottile/blacken-docs
-    rev: v1.10.0
+    rev: v1.12.1
     hooks:
       - id: blacken-docs
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    hooks:
-      - id: prettier
-        stages: [commit]
-        exclude: ^recipes/.*
-    rev: v2.3.2
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.1
+    rev: v2.31.0
     hooks:
       - id: pyupgrade
         args: [--py36-plus, --py37-plus, --py38-plus]
@@ -85,7 +79,7 @@ repos:
           - flake8-bugbear == 20.11.1
         language_version: python3.8
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.0
+    rev: 1.7.2
     hooks:
       - id: bandit
         exclude: ^test_*
