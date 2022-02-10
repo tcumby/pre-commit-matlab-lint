@@ -336,6 +336,7 @@ class MatlabHandleList:
             handle = matches[0]
             self.__logger.info(f'Handle for MATLAB release {release_name} found.')
         else:
+            # TODO search for MATLAB if not found
             self.__logger.warning(f'Handle for MATLAB release name {release_name} not found.')
 
         return handle
@@ -360,6 +361,7 @@ class MatlabHandleList:
             handle = matches[0]
             self.__logger.info(f'Handle for MATLAB version {version} found.')
         else:
+            # TODO search for MATLAB if not found
             self.__logger.warning(f'Handle for MATLAB version {version} not found.')
 
         return handle
@@ -384,6 +386,7 @@ class MatlabHandleList:
             handle = matches[0]
             self.__logger.info(f'Handle for MATLAB at {matlab_home_path} found.')
         else:
+            # TODO search for MATLAB if not found
             self.__logger.warning(f'Handle for MATLAB at {matlab_home_path} not found')
 
         return handle
@@ -408,6 +411,7 @@ class MatlabHandleList:
             handle = matches[0]
             self.__logger.info(f'Handle for MATLAB at {matlab_exe_path} found.')
         else:
+            # TODO search for MATLAB if not found
             self.__logger.warning(f'Handle for MATLAB at {matlab_exe_path} not found.')
 
         return handle
