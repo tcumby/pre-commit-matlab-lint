@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -84,6 +85,7 @@ def validate_matlab(
     ignore_ok_pragmas: bool,
     use_factory_default: bool,
     checkcode_config_file: Optional[Path] = None,
+    logger: logging.Logger = logging.getLogger(__name__),
 ) -> ReturnCode:
     """Validate a list of MATLAB source files using MATLAB's checkcode function.
 
@@ -106,7 +108,7 @@ def validate_matlab(
                             Ignore any checkcode config files and use factory defaults
     checkcode_config_file: Path, optional
                             An absolute path to a checkcode config file
-
+    logger: logging.Logger, optional
     Returns
     -------
     ReturnCode
@@ -124,12 +126,14 @@ def validate_matlab(
 
     print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
     stdout, return_code = matlab_handle.run(matlab_script)
-
+    logger.debug(f'MATLAB stdout: {stdout}')
+    logger.debug(f'MATLAB return code: {return_code}')
     try:
         if len(filepaths) == 1:
             this_file = filepaths[0]
 
-            if len(stdout) > 0 :
+            if len(stdout) > 0:
+                logger.info('MATLAB returned linter warnings and/or errors.')
                 linter_results: List[Dict[str, Any]] = json.loads(stdout)
                 if isinstance(linter_results, dict):
                     linter_results = [linter_results]
@@ -138,10 +142,12 @@ def validate_matlab(
                 print_linter_result(this_file, linter_results)
             else:
                 # If there is no stdout from MATLAB, then there were no errors
+                logger.info('No results were returned from MATLAB')
                 return_code = ReturnCode.OK
 
         elif len(filepaths) > 1:
             if len(stdout) > 0:
+                logger.info('MATLAB returned linter warnings and/or errors.')
                 linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
                 return_codes: List[ReturnCode] = []
                 for index, this_file in enumerate(filepaths):
@@ -160,12 +166,14 @@ def validate_matlab(
                 )
             else:
                 # If there is no stdout from MATLAB, then there were no errors
+                logger.info('No results were returned from MATLAB')
                 return_code = ReturnCode.OK
 
     except json.JSONDecodeError as err:
         return_code = ReturnCode.FAIL
-        print(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
+        logger.error(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
 
+    logger.info(f'MATLAB lint result: {return_code}')
     return return_code
 
 
@@ -208,6 +216,9 @@ def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+
+    logger = logging.getLogger(__name__)
+
     """Parse commandline arguments and validate the supplied files through MATLAB's checkcode function."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -262,6 +273,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Ignore any checkcode config file and use factory default settings",
     )
+
+    parser.add_argument('--logging-level', action="store", help="The logging.Level value to set.", default=logging.WARN, type=int)
     parser.add_argument("filepaths", nargs="*", type=Path)
     args = parser.parse_args(argv)
 
@@ -283,14 +296,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     fail_warnings: bool = args.treat_warning_as_error
     use_factory_default: bool = args.use_default_checkcode_config
 
+    # Set the logging level
+    logger.setLevel(args.logging_level)
+
     matlab_handle, return_code = find_matlab(
         matlab_home_path=matlab_home_path,
         matlab_version=matlab_version,
         matlab_release_name=matlab_release_name,
+        logger=logger,
     )
 
     if ReturnCode.FAIL == return_code or matlab_handle is None:
-        print("Unable to find MATLAB")
+        logger.error("Unable to find MATLAB")
         return return_code
     else:
         return validate_matlab(
@@ -302,6 +319,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             ignore_ok_pragmas,
             use_factory_default,
             checkcode_config_file,
+            logger,
         )
 
 
