@@ -35,3 +35,9 @@ and [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 ### Added:
 
 - Properly handling the case when MATLAB finds no linter errors or warnings
+
+## [1.0.4] - 2022-02-10
+
+### Added:
+
+- Fixed an issue with relative file paths causing false positives.
