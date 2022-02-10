@@ -358,7 +358,7 @@ class MatlabHandleList:
         matches = [h for h in self.handles if version in h.version]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.warning(f'Handle for MATLAB version {version} found.')
+            self.__logger.info(f'Handle for MATLAB version {version} found.')
         else:
             self.__logger.warning(f'Handle for MATLAB version {version} not found.')
 
