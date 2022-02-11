@@ -33,6 +33,10 @@ class MatlabHandle:
             )
 
         if len(self.version) == 0 and len(self.release) == 0:
+            # Try to get the version and release name from a product info XML file at <MATLAB home>/appdata/products
+            self.version, self.release = MatlabHandle.read_product_info(self.get_product_info_file())
+
+        if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
             self.version, self.release, _ = self.query_version()
 
@@ -40,6 +44,16 @@ class MatlabHandle:
 
     def get_version_info_file(self) -> Path:
         return self.home_path / "VersionInfo.xml"
+
+    def get_product_info_file(self) ->  Optional[Path]:
+        info_file: Optional[Path] = None
+        products_folder = self.home_path / 'appdata' / 'products'
+        arch: str = MatlabHandle.get_architecture_folder_name()
+        files = [f for f in products_folder.glob('MATLAB*.xml') if re.match(f'MATLAB\s*\d+\.\d+\s*{arch}.*.xml', f.name)]
+        if len(files) > 0:
+            info_file = files[0]
+
+        return info_file
 
     def is_initialized(self) -> bool:
         return (
@@ -213,6 +227,20 @@ class MatlabHandle:
         return version, release
 
     @classmethod
+    def read_product_info(cls, product_info_path: Path) -> Tuple[str, str]:
+        version: str = ""
+        release: str = ""
+
+        if product_info_path.exists():
+            tree = ElementTree.parse(product_info_path)
+            root = tree.getroot()
+
+            version = root.find("productVersion").text
+            release = root.find("releaseFamily").text
+
+        return version, release
+
+    @classmethod
     def from_dict(cls, input_dict: Dict[str, str]) -> "MatlabHandle":
         home_path = Path(input_dict.get("home_path", "")).absolute()
         exe_path = Path(input_dict.get("exe_path", "")).absolute()
@@ -229,13 +257,6 @@ class MatlabHandle:
             checksum=checksum,
             release=release,
         )
-
-    @classmethod
-    def get_arch_folder_name(cls) -> str:
-        """Return the MATLAB architecture folder name."""
-        arch_folders = {"win32": "win64", "darwin": "maci64", "linux": "glnxa64"}
-
-        return arch_folders[sys.platform]
 
     @classmethod
     def get_matlab_exe_name(cls) -> str:

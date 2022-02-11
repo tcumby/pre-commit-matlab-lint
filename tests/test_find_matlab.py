@@ -260,6 +260,20 @@ class TestFindMatlab:
         assert version == "1.2.3.4"
         assert release == "R1234a"
 
+    def test_read_product_info(self):
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        handle_list = MatlabHandleList(logger=logger)
+        handle_list.update(get_matlab_installs())
+
+        handle: MatlabHandle
+        for handle in handle_list.handles:
+            product_info = handle.get_product_info_file()
+            version, release_name= MatlabHandle.read_product_info(product_info)
+
+            assert len(version) > 0, f"Failed to get version for {handle.home_path}"
+            assert len(release_name) > 0, f"Failed to get release name for {handle.home_path}"
+
     def test_query_version(self):
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
