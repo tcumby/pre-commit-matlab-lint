@@ -20,6 +20,7 @@ class MatlabHandle:
 
     home_path: Path
     exe_path: Path
+    base_exe_path: Path
     checksum: str = ""
     version: str = ""
     release: str = ""
@@ -88,6 +89,7 @@ class MatlabHandle:
         if sys.platform == "win32":
             # For Windows, the MATLAB executable at <home>/bin/matlab.exe exits immediately so "-wait" is needed
             command.append("-wait")
+            command.append("-minimize")
         else:
             # For Linux/macOS "-nodisplay" exists in addition to "-nodesktop"
             command.append("-nodisplay")
@@ -182,11 +184,18 @@ class MatlabHandle:
                 )
 
     @classmethod
-    def construct_exe_path(cls, home_path: Path) -> Path:
+    def construct_base_exe_path(cls, home_path: Path) -> Path:
         return (
             home_path
             / "bin"
             / MatlabHandle.get_architecture_folder_name()
+            / MatlabHandle.get_matlab_exe_name()
+        )
+
+    @classmethod
+    def construct_exe_path(cls, home_path: Path) -> Path:
+        return (
+            home_path / "bin"
             / MatlabHandle.get_matlab_exe_name()
         )
 
@@ -207,6 +216,7 @@ class MatlabHandle:
     def from_dict(cls, input_dict: Dict[str, str]) -> "MatlabHandle":
         home_path = Path(input_dict.get("home_path", "")).absolute()
         exe_path = Path(input_dict.get("exe_path", "")).absolute()
+        base_exe_path = Path(input_dict.get("base_exe_path", "")).absolute()
         version = input_dict.get("version", "")
         checksum = input_dict.get("checksum", "")
         release = input_dict.get("release", "")
@@ -214,6 +224,7 @@ class MatlabHandle:
         return MatlabHandle(
             home_path=home_path,
             exe_path=exe_path,
+            base_exe_path=base_exe_path,
             version=version,
             checksum=checksum,
             release=release,
@@ -290,7 +301,8 @@ class MatlabHandleList:
             if self.find_home_path(home_path) is None:
                 self.__logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)
-                handle = MatlabHandle(home_path=home_path, exe_path=exe_path)
+                base_exe_path = MatlabHandle.construct_base_exe_path(home_path)
+                handle = MatlabHandle(home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path)
                 self.append(handle)
 
     def prune(self) -> None:
