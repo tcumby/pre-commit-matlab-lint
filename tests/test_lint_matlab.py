@@ -70,7 +70,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -107,7 +108,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -144,7 +146,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -181,7 +184,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -229,7 +233,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -276,7 +281,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         command = prepare_command(
@@ -319,7 +325,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -366,7 +373,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         command = prepare_command(
@@ -398,7 +406,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -432,7 +441,8 @@ class TestLintMatlab:
 
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(

@@ -227,11 +227,11 @@ class MatlabHandle:
         return version, release
 
     @classmethod
-    def read_product_info(cls, product_info_path: Path) -> Tuple[str, str]:
+    def read_product_info(cls, product_info_path: Optional[Path]) -> Tuple[str, str]:
         version: str = ""
         release: str = ""
 
-        if product_info_path.exists():
+        if product_info_path is not None and product_info_path.exists():
             tree = ElementTree.parse(product_info_path)
             root = tree.getroot()
 
@@ -293,7 +293,7 @@ class MatlabHandleList:
     def __len__(self) -> int:
         return len(self.handles)
 
-    def setLogger(self, logger: logging.Logger):
+    def set_logger(self, logger: logging.Logger):
         self.__logger = logger
 
     def save(self):
@@ -622,7 +622,8 @@ def find_matlab(
             # initializes, then add it to the MatlabHandleList
             logger.info("The MATLAB interpreter has not been cached previously.")
             exe_path: Path = MatlabHandle.construct_exe_path(matlab_home_path)
-            test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path)
+            base_exe_path: Path = MatlabHandle.construct_base_exe_path(matlab_home_path)
+            test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path, base_exe_path=base_exe_path)
             handle = test_handle if test_handle.is_initialized() else None
             if handle is not None:
                 handle_list.append(handle)
