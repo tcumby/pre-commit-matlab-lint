@@ -41,3 +41,9 @@ and [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 ### Added:
 
 - Fixed an issue with relative file paths causing false positives.
+
+## [1.0.5] - 2022-02-14
+
+### Added:
+
+- Improved the handling of retrieving the MATLAB version info so earlier releases (i.e. 2010b - 2017b) are returning their version info.
