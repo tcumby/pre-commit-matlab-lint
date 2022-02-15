@@ -285,6 +285,8 @@ class TestFindMatlab:
 
         handle: MatlabHandle
         for handle in handle_list.handles:
+            logger.info(f"Testing {handle.home_path}")
             version, release_name, return_code = handle.query_version()
             assert len(version) > 0, f"Failed to get version for {handle.home_path}"
             assert len(release_name) > 0, f"Failed to get release name for {handle.home_path}"
+            logger.info(f"MATLAB {handle.release} succeeded.")

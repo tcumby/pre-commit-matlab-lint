@@ -4,6 +4,8 @@ import os
 import re
 import subprocess
 import sys
+from tempfile import TemporaryFile, TemporaryDirectory
+
 import defusedxml.ElementTree as ElementTree  # type: ignore
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -156,12 +158,29 @@ class MatlabHandle:
         version: str = ""
         release: str = ""
         if ReturnCode.OK == return_code:
-            match = re.match(r"(?P<version>[\d+.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
-            if match:
-                version = match.group("version")
-                release = match.group("release")
+            release, version = self.extract_release_version_from_output(stdout)
+            if len(release) == 0 and len(version) == 0:
+                # This MATLAB instance is not returning info to stdout, so output to file instead
+                print(f"This MATLAB instance {self.home_path} failed to return anything via stdout.")
+                with TemporaryDirectory() as base_path:
+                    matlab_log_file = Path(base_path) / 'MATLAB_output.txt'
+                    _, return_code = self.run(f"clc;fid=fopen('{str(matlab_log_file)}', 'w');fprintf(fid, '%s', version);fclose(fid);quit;")
+                    with matlab_log_file.open() as output:
+                        text = output.read()
+                        release, version = self.extract_release_version_from_output(text)
+
+                    matlab_log_file.unlink()
 
         return version, release, return_code
+
+    def extract_release_version_from_output(self, stdout) -> Tuple[str, str]:
+        release:str = ""
+        version:str = ""
+        match = re.match(r"(?P<version>[\d+.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
+        if match:
+            version = match.group("version")
+            release = match.group("release")
+        return release, version
 
     def compute_checksum(self) -> str:
         """Compute the sha256 hash of the MATLAB executable.
