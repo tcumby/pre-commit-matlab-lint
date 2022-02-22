@@ -4,16 +4,32 @@ import os
 import re
 import subprocess
 import sys
-from tempfile import TemporaryFile, TemporaryDirectory
+from tempfile import TemporaryDirectory
 
 import defusedxml.ElementTree as ElementTree  # type: ignore
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict
 
 import yaml
 
 from precommitmatlablint.return_code import ReturnCode
+
+
+@dataclass
+class LinterRecord:
+    id: str = ""
+    message: str = ""
+    line: int = 0
+    columns: List[int] = field(default_factory=list)
+
+
+@dataclass
+class MLintHandle:
+    exe_path: Path
+
+    def lint(self, file_list: List[Path]) -> List[LinterRecord]:
+        pass
 
 
 @dataclass
@@ -36,7 +52,9 @@ class MatlabHandle:
 
         if len(self.version) == 0 and len(self.release) == 0:
             # Try to get the version and release name from a product info XML file at <MATLAB home>/appdata/products
-            self.version, self.release = MatlabHandle.read_product_info(self.get_product_info_file())
+            self.version, self.release = MatlabHandle.read_product_info(
+                self.get_product_info_file()
+            )
 
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
@@ -47,11 +65,15 @@ class MatlabHandle:
     def get_version_info_file(self) -> Path:
         return self.home_path / "VersionInfo.xml"
 
-    def get_product_info_file(self) ->  Optional[Path]:
+    def get_product_info_file(self) -> Optional[Path]:
         info_file: Optional[Path] = None
-        products_folder = self.home_path / 'appdata' / 'products'
+        products_folder = self.home_path / "appdata" / "products"
         arch: str = MatlabHandle.get_architecture_folder_name()
-        files = [f for f in products_folder.glob('MATLAB*.xml') if re.match(f'MATLAB\s*\d+\.\d+\s*{arch}.*.xml', f.name)]
+        files = [
+            f
+            for f in products_folder.glob("MATLAB*.xml")
+            if re.match(rf"MATLAB\s*\d+\.\d+\s*{arch}.*.xml", f.name)
+        ]
         if len(files) > 0:
             info_file = files[0]
 
@@ -161,10 +183,14 @@ class MatlabHandle:
             release, version = self.extract_release_version_from_output(stdout)
             if len(release) == 0 and len(version) == 0:
                 # This MATLAB instance is not returning info to stdout, so output to file instead
-                print(f"This MATLAB instance {self.home_path} failed to return anything via stdout.")
+                print(
+                    f"This MATLAB instance {self.home_path} failed to return anything via stdout."
+                )
                 with TemporaryDirectory() as base_path:
-                    matlab_log_file = Path(base_path) / 'MATLAB_output.txt'
-                    _, return_code = self.run(f"clc;fid=fopen('{str(matlab_log_file)}', 'w');fprintf(fid, '%s', version);fclose(fid);quit;")
+                    matlab_log_file = Path(base_path) / "MATLAB_output.txt"
+                    _, return_code = self.run(
+                        f"clc;fid=fopen('{str(matlab_log_file)}', 'w');fprintf(fid, '%s', version);fclose(fid);quit;"
+                    )
                     with matlab_log_file.open() as output:
                         text = output.read()
                         release, version = self.extract_release_version_from_output(text)
@@ -174,8 +200,8 @@ class MatlabHandle:
         return version, release, return_code
 
     def extract_release_version_from_output(self, stdout) -> Tuple[str, str]:
-        release:str = ""
-        version:str = ""
+        release: str = ""
+        version: str = ""
         match = re.match(r"(?P<version>[\d+.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
         if match:
             version = match.group("version")
@@ -227,10 +253,7 @@ class MatlabHandle:
 
     @classmethod
     def construct_exe_path(cls, home_path: Path) -> Path:
-        return (
-            home_path / "bin"
-            / MatlabHandle.get_matlab_exe_name()
-        )
+        return home_path / "bin" / MatlabHandle.get_matlab_exe_name()
 
     @classmethod
     def read_version_info(cls, version_info_path: Path) -> Tuple[str, str]:
@@ -342,7 +365,9 @@ class MatlabHandleList:
                 self.__logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)
                 base_exe_path = MatlabHandle.construct_base_exe_path(home_path)
-                handle = MatlabHandle(home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path)
+                handle = MatlabHandle(
+                    home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path
+                )
                 self.append(handle)
 
     def prune(self) -> None:
@@ -642,7 +667,9 @@ def find_matlab(
             logger.info("The MATLAB interpreter has not been cached previously.")
             exe_path: Path = MatlabHandle.construct_exe_path(matlab_home_path)
             base_exe_path: Path = MatlabHandle.construct_base_exe_path(matlab_home_path)
-            test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path, base_exe_path=base_exe_path)
+            test_handle = MatlabHandle(
+                home_path=matlab_home_path, exe_path=exe_path, base_exe_path=base_exe_path
+            )
             handle = test_handle if test_handle.is_initialized() else None
             if handle is not None:
                 handle_list.append(handle)
