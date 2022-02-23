@@ -16,7 +16,7 @@ import yaml
 from precommitmatlablint.return_code import ReturnCode
 
 
-@dataclass
+@dataclass(frozen=True)
 class LinterRecord:
     id: str = ""
     message: str = ""
@@ -24,12 +24,79 @@ class LinterRecord:
     columns: List[int] = field(default_factory=list)
 
 
-@dataclass
+@dataclass(frozen=True)
 class MLintHandle:
     exe_path: Path
 
-    def lint(self, file_list: List[Path]) -> List[LinterRecord]:
-        pass
+    def lint(
+        self,
+        filepaths: List[Path],
+        fail_warnings: bool,
+        enable_cyc: bool,
+        enable_mod_cyc: bool,
+        ignore_ok_pragmas: bool,
+        use_factory_default: bool,
+        checkcode_config_file: Optional[Path] = None,
+    ) -> List[LinterRecord]:
+
+        linter_records: List[LinterRecord] = []
+
+        command = [str(self.exe_path)]
+        arguments = MLintHandle.construct_command_arguments(
+            filepaths=filepaths,
+            fail_warnings=fail_warnings,
+            enable_cyc=enable_cyc,
+            enable_mode=enable_mod_cyc,
+            ignore_ok_pragmas=ignore_ok_pragmas,
+            use_factory_default=use_factory_default,
+            checkcode_config_file=checkcode_config_file,
+        )
+
+        command = command + arguments
+
+        completed_process = subprocess.run(command, capture_output=True, text=True)
+
+        stdout = completed_process.stdout
+
+        linter_records = self.parse_mlint_output(stdout)
+
+        return linter_records
+
+        def parse_mlint_output(stdout: str) -> List[LinterRecord]:
+            pass
+
+    @classmethod
+    def construct_command_arguments(
+        cls,
+        filepaths: List[Path],
+        fail_warnings: bool,
+        enable_cyc: bool,
+        enable_mod_cyc: bool,
+        ignore_ok_pragmas: bool,
+        use_factory_default: bool,
+        checkcode_config_file: Optional[Path] = None,
+    ) -> List[str]:
+        file_list = [f"'{str(f)}'" for f in filepaths]
+
+        level_option = "'-m0'" if fail_warnings else "'-m2'"
+        arguments: List = [level_option, "'-id'", "'-struct'"]
+        if enable_cyc:
+            arguments.append("'-cyc'")
+
+        if enable_mod_cyc:
+            arguments.append("'-modcyc'")
+
+        if ignore_ok_pragmas:
+            arguments.append("'-notok'")
+
+        if use_factory_default:
+            arguments.append("'-config=factory'")
+        elif checkcode_config_file:
+            arguments.append(f"'-config={str(checkcode_config_file)}'")
+
+        arguments = arguments + file_list
+
+        return arguments
 
 
 @dataclass
@@ -78,6 +145,11 @@ class MatlabHandle:
             info_file = files[0]
 
         return info_file
+
+    def get_mlint_handle(self) -> MLintHandle:
+        return MLintHandle(
+            exe_path=Path(self.home_path, "bin", self.get_architecture_folder_name(), "mlint")
+        )
 
     def is_initialized(self) -> bool:
         return (
