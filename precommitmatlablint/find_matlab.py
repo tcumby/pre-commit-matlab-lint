@@ -29,8 +29,8 @@ class LinterRecord:
         mlint_elements = mlint_message.split(":")
 
         line_and_column = mlint_elements[0]
-        id: str = mlint_elements[1]
-        message: str = mlint_elements[2]
+        id: str = mlint_elements[1].strip()
+        message: str = mlint_elements[2].strip()
         match = re.match(
             pattern=r".*L\s*(?P<line>\d+)\s*\(C\s*(?P<column_min>\d+)\-(?P<column_max>\d+)\)",
             string=line_and_column,

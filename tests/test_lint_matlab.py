@@ -4,7 +4,13 @@ from typing import List
 import pytest  # noqa: F401 # pylint: disable=unused-import
 from pathlib import Path
 
-from precommitmatlablint.find_matlab import MatlabHandleList, get_matlab_installs, MatlabHandle
+from precommitmatlablint.find_matlab import (
+    MatlabHandleList,
+    get_matlab_installs,
+    MatlabHandle,
+    MLintHandle,
+    LinterRecord,
+)
 from precommitmatlablint.lint_matlab import validate_matlab, main
 from precommitmatlablint.return_code import ReturnCode
 
@@ -71,7 +77,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -109,7 +117,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -147,7 +157,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -185,7 +197,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -234,7 +248,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -282,7 +298,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         command = prepare_command(
@@ -326,7 +344,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -374,7 +394,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         command = prepare_command(
@@ -407,7 +429,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -442,7 +466,9 @@ class TestLintMatlab:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -456,3 +482,85 @@ class TestLintMatlab:
         )
 
         assert expected == return_code
+
+    @pytest.mark.parametrize("enable_cyc", [True, False])
+    @pytest.mark.parametrize("enable_mod_cyc", [True, False])
+    @pytest.mark.parametrize("ignore_ok_pragmas", [True, False])
+    @pytest.mark.parametrize("fail_warnings", [True, False])
+    def test_clean_function_mlint(
+        self,
+        matlab_folder_path: Path,
+        handle_list,
+        enable_cyc: bool,
+        enable_mod_cyc: bool,
+        ignore_ok_pragmas: bool,
+        fail_warnings: bool,
+    ):
+        test_file = matlab_folder_path / "clean_function.m"
+        assert test_file.exists()
+
+        install_list = get_matlab_installs()
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
+        assert handle.is_initialized()
+
+        mlint_handle: MLintHandle = handle.get_mlint_handle()
+
+        linter_records: List[LinterRecord] = mlint_handle.lint(
+            filepaths=[test_file],
+            fail_warnings=fail_warnings,
+            enable_cyc=enable_cyc,
+            enable_mod_cyc=enable_mod_cyc,
+            ignore_ok_pragmas=ignore_ok_pragmas,
+            use_factory_default=False,
+        )
+
+        assert len(linter_records) == 0
+
+    @pytest.mark.parametrize("enable_cyc", [True, False])
+    @pytest.mark.parametrize("enable_mod_cyc", [True, False])
+    @pytest.mark.parametrize("ignore_ok_pragmas", [True, False])
+    @pytest.mark.parametrize("fail_warnings", [True, False])
+    def test_invalid_char_mlint(
+        self,
+        matlab_folder_path: Path,
+        handle_list,
+        enable_cyc: bool,
+        enable_mod_cyc: bool,
+        ignore_ok_pragmas: bool,
+        fail_warnings: bool,
+    ):
+        test_file = matlab_folder_path / "invalid_char.m"
+        assert test_file.exists()
+
+        install_list = get_matlab_installs()
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
+        assert handle.is_initialized()
+
+        mlint_handle: MLintHandle = handle.get_mlint_handle()
+
+        linter_records: List[LinterRecord] = mlint_handle.lint(
+            filepaths=[test_file],
+            fail_warnings=fail_warnings,
+            enable_cyc=enable_cyc,
+            enable_mod_cyc=enable_mod_cyc,
+            ignore_ok_pragmas=ignore_ok_pragmas,
+            use_factory_default=False,
+        )
+
+        assert len(linter_records) == 1
