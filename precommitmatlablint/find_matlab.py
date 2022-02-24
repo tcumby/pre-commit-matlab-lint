@@ -18,10 +18,33 @@ from precommitmatlablint.return_code import ReturnCode
 
 @dataclass(frozen=True)
 class LinterRecord:
+    source_file: Path = Path()
     id: str = ""
     message: str = ""
     line: int = 0
     columns: List[int] = field(default_factory=list)
+
+    @classmethod
+    def from_mlint(cls, mlint_message: str, source_file: Path) -> "LinterRecord":
+        mlint_elements = mlint_message.split(":")
+
+        line_and_column = mlint_elements[0]
+        id: str = mlint_elements[1]
+        message: str = mlint_elements[2]
+        match = re.match(
+            pattern=r".*L\s*(?P<line>\d+)\s*\(C\s*(?P<column_min>\d+)\-(?P<column_max>\d+)\)",
+            string=line_and_column,
+        )
+        line: int = 0
+        columns: List[int] = []
+        if match:
+            line = int(match.group("line"))
+            columns.append(int(match.group("column_min")))
+            columns.append(int(match.group("column_max")))
+
+        return LinterRecord(
+            source_file=source_file, id=id, message=message, line=line, columns=columns
+        )
 
 
 @dataclass(frozen=True)
@@ -46,7 +69,7 @@ class MLintHandle:
             filepaths=filepaths,
             fail_warnings=fail_warnings,
             enable_cyc=enable_cyc,
-            enable_mode=enable_mod_cyc,
+            enable_mod_cyc=enable_mod_cyc,
             ignore_ok_pragmas=ignore_ok_pragmas,
             use_factory_default=use_factory_default,
             checkcode_config_file=checkcode_config_file,
@@ -58,12 +81,25 @@ class MLintHandle:
 
         stdout = completed_process.stdout
 
-        linter_records = self.parse_mlint_output(stdout)
+        linter_records = self.parse_mlint_output(stdout, filepaths)
 
         return linter_records
 
-        def parse_mlint_output(stdout: str) -> List[LinterRecord]:
-            pass
+    def parse_mlint_output(self, stdout: str, file_list: List[Path]) -> List[LinterRecord]:
+        linter_records: List[LinterRecord] = []
+
+        if len(stdout) > 0:
+            lines: List[str] = stdout.splitlines()
+            if len(file_list) == 1:
+                source_file = file_list[0]
+                for line in lines:
+                    linter_records.append(
+                        LinterRecord.from_mlint(mlint_message=line, source_file=source_file)
+                    )
+            elif len(file_list) > 1:
+                pass
+
+        return linter_records
 
     @classmethod
     def construct_command_arguments(
@@ -79,7 +115,7 @@ class MLintHandle:
         file_list = [f"'{str(f)}'" for f in filepaths]
 
         level_option = "'-m0'" if fail_warnings else "'-m2'"
-        arguments: List = [level_option, "'-id'", "'-struct'"]
+        arguments: List = [level_option, "'-id'"]
         if enable_cyc:
             arguments.append("'-cyc'")
 
