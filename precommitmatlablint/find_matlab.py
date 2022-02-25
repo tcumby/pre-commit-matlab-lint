@@ -18,14 +18,13 @@ from precommitmatlablint.return_code import ReturnCode
 
 @dataclass(frozen=True)
 class LinterRecord:
-    source_file: Path = Path()
     id: str = ""
     message: str = ""
     line: int = 0
     columns: List[int] = field(default_factory=list)
 
     @classmethod
-    def from_mlint(cls, mlint_message: str, source_file: Path) -> "LinterRecord":
+    def from_mlint(cls, mlint_message: str) -> "LinterRecord":
         mlint_elements = mlint_message.split(":")
 
         line_and_column = mlint_elements[0]
@@ -42,9 +41,13 @@ class LinterRecord:
             columns.append(int(match.group("column_min")))
             columns.append(int(match.group("column_max")))
 
-        return LinterRecord(
-            source_file=source_file, id=id, message=message, line=line, columns=columns
-        )
+        return LinterRecord(id=id, message=message, line=line, columns=columns)
+
+
+@dataclass(frozen=True)
+class LinterReport:
+    source_file: Path = Path()
+    records: List[LinterRecord] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -91,11 +94,8 @@ class MLintHandle:
         if len(stdout) > 0:
             lines: List[str] = stdout.splitlines()
             if len(file_list) == 1:
-                source_file = file_list[0]
                 for line in lines:
-                    linter_records.append(
-                        LinterRecord.from_mlint(mlint_message=line, source_file=source_file)
-                    )
+                    linter_records.append(LinterRecord.from_mlint(mlint_message=line))
             elif len(file_list) > 1:
                 pass
 
