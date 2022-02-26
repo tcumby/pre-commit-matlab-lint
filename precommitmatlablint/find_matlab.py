@@ -63,9 +63,9 @@ class MLintHandle:
         ignore_ok_pragmas: bool,
         use_factory_default: bool,
         checkcode_config_file: Optional[Path] = None,
-    ) -> List[LinterRecord]:
+    ) -> List[LinterReport]:
 
-        linter_records: List[LinterRecord] = []
+        linter_reports: List[LinterReport]
 
         command = [str(self.exe_path)]
         arguments = MLintHandle.construct_command_arguments(
@@ -84,22 +84,44 @@ class MLintHandle:
 
         stdout = completed_process.stdout
 
-        linter_records = self.parse_mlint_output(stdout, filepaths)
+        linter_reports = self.parse_mlint_output(stdout, filepaths)
 
-        return linter_records
+        return linter_reports
 
-    def parse_mlint_output(self, stdout: str, file_list: List[Path]) -> List[LinterRecord]:
-        linter_records: List[LinterRecord] = []
-
+    @classmethod
+    def parse_mlint_output(cls, stdout: str, file_list: List[Path]) -> List[LinterReport]:
+        linter_reports: List[LinterReport] = []
         if len(stdout) > 0:
             lines: List[str] = stdout.splitlines()
             if len(file_list) == 1:
+                this_report = LinterReport(source_file=file_list[0])
                 for line in lines:
-                    linter_records.append(LinterRecord.from_mlint(mlint_message=line))
+                    this_report.records.append(LinterRecord.from_mlint(mlint_message=line))
+                linter_reports.append(this_report)
             elif len(file_list) > 1:
-                pass
+                boundary_indeces = [
+                    idx for (idx, line) in enumerate(lines) if line.startswith("===")
+                ]
 
-        return linter_records
+                for (idx, boundary_index) in enumerate(boundary_indeces):
+                    # Each boundary line is of the form '============ <file path> ============'
+                    file_path: str = lines[boundary_index].strip("=").strip()
+                    this_report = LinterReport(source_file=Path(file_path))
+                    start_index = boundary_index + 1
+                    end_index = (
+                        len(lines)
+                        if idx == len(boundary_indeces)
+                        else boundary_indeces[idx + 1] - 1
+                    )
+
+                    for line_index in range(start_index, end_index):
+                        this_report.records.append(
+                            LinterRecord.from_mlint(mlint_message=lines[line_index])
+                        )
+
+                    linter_reports.append(this_report)
+
+        return linter_reports
 
     @classmethod
     def construct_command_arguments(

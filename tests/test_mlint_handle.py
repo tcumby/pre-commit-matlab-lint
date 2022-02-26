@@ -10,6 +10,7 @@ from precommitmatlablint.find_matlab import (
     MatlabHandle,
     MLintHandle,
     LinterRecord,
+    LinterReport,
 )
 
 
@@ -48,13 +49,13 @@ class TestMLintHandle:
 
         mlint_message = "L 6402 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."
 
-        linter_records: List[LinterRecord] = mlint_handle.parse_mlint_output(
+        linter_reports: List[LinterReport] = mlint_handle.parse_mlint_output(
             stdout=mlint_message, file_list=[test_file]
         )
 
-        assert len(linter_records) == 1
-
-        record = linter_records[0]
+        assert len(linter_reports) == 1
+        assert len(linter_reports[0].records) == 1
+        record = linter_reports[0].records[0]
 
         assert record.line == 6402, "Line is incorrect"
         assert record.id == "GVMIS", "ID is incorrect"
@@ -88,15 +89,15 @@ class TestMLintHandle:
 L 3696 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead.
 L 3757 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead.
 L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."""
-        linter_records: List[LinterRecord] = mlint_handle.parse_mlint_output(
+        linter_reports: List[LinterReport] = mlint_handle.parse_mlint_output(
             stdout=mlint_message, file_list=[test_file]
         )
-
+        assert len(linter_reports) == 1
+        linter_records: List[LinterRecord] = linter_reports[0].records
         assert len(linter_records) == 4
         expected_lines = [3681, 3696, 3757, 3924]
         for idx, record in enumerate(linter_records):
             assert record.line == expected_lines[idx], "Line is incorrect"
-            assert record.source_file == test_file, "File is correct"
             assert record.id == "GVMIS", "ID is incorrect"
             assert len(record.columns) == 2, "Columns array is incorrect size"
             assert record.columns[0] == 1, "Column start is incorrect"
