@@ -49,33 +49,32 @@ class LinterReport:
     source_file: Path = Path()
     records: List[LinterRecord] = field(default_factory=list)
 
+    def has_records(self) -> bool:
+        return len(self.records) > 0
+
+
+@dataclass(frozen=True)
+class LinterOptions:
+    fail_warnings: bool
+    enable_cyc: bool
+    enable_mod_cyc: bool
+    ignore_ok_pragmas: bool
+    use_factory_default: bool
+    checkcode_config_file: Optional[Path] = None
+
 
 @dataclass(frozen=True)
 class MLintHandle:
     exe_path: Path
 
-    def lint(
-        self,
-        filepaths: List[Path],
-        fail_warnings: bool,
-        enable_cyc: bool,
-        enable_mod_cyc: bool,
-        ignore_ok_pragmas: bool,
-        use_factory_default: bool,
-        checkcode_config_file: Optional[Path] = None,
-    ) -> List[LinterReport]:
+    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
 
         linter_reports: List[LinterReport]
 
         command = [str(self.exe_path)]
         arguments = MLintHandle.construct_command_arguments(
             filepaths=filepaths,
-            fail_warnings=fail_warnings,
-            enable_cyc=enable_cyc,
-            enable_mod_cyc=enable_mod_cyc,
-            ignore_ok_pragmas=ignore_ok_pragmas,
-            use_factory_default=use_factory_default,
-            checkcode_config_file=checkcode_config_file,
+            options=options,
         )
 
         command = command + arguments
@@ -125,32 +124,25 @@ class MLintHandle:
 
     @classmethod
     def construct_command_arguments(
-        cls,
-        filepaths: List[Path],
-        fail_warnings: bool,
-        enable_cyc: bool,
-        enable_mod_cyc: bool,
-        ignore_ok_pragmas: bool,
-        use_factory_default: bool,
-        checkcode_config_file: Optional[Path] = None,
+        cls, filepaths: List[Path], options: LinterOptions
     ) -> List[str]:
         file_list = [f"'{str(f)}'" for f in filepaths]
 
-        level_option = "'-m0'" if fail_warnings else "'-m2'"
+        level_option = "'-m0'" if options.fail_warnings else "'-m2'"
         arguments: List = [level_option, "'-id'"]
-        if enable_cyc:
+        if options.enable_cyc:
             arguments.append("'-cyc'")
 
-        if enable_mod_cyc:
+        if options.enable_mod_cyc:
             arguments.append("'-modcyc'")
 
-        if ignore_ok_pragmas:
+        if options.ignore_ok_pragmas:
             arguments.append("'-notok'")
 
-        if use_factory_default:
+        if options.use_factory_default:
             arguments.append("'-config=factory'")
-        elif checkcode_config_file:
-            arguments.append(f"'-config={str(checkcode_config_file)}'")
+        elif options.checkcode_config_file:
+            arguments.append(f"'-config={str(options.checkcode_config_file)}'")
 
         arguments = arguments + file_list
 
