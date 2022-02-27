@@ -92,6 +92,8 @@ class MLintHandle:
         linter_reports: List[LinterReport] = []
         if len(stdout) > 0:
             lines: List[str] = stdout.splitlines()
+            lines = [line.strip() for line in lines]
+
             if len(file_list) == 1:
                 this_report = LinterReport(source_file=file_list[0])
                 for line in lines:
@@ -109,9 +111,9 @@ class MLintHandle:
 
                     start_index = boundary_index + 1
                     end_index = (
-                        len(lines) - 1
+                        len(lines)
                         if idx == len(boundary_indeces) - 1
-                        else boundary_indeces[idx + 1] - 1
+                        else boundary_indeces[idx + 1]
                     )
 
                     has_records = (end_index - start_index + 1) > 0
