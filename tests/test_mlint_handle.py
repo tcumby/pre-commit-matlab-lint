@@ -2,7 +2,7 @@ from tempfile import TemporaryDirectory
 from typing import List
 
 import pytest  # noqa: F401 # pylint: disable=unused-import
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from precommitmatlablint.find_matlab import (
     MatlabHandleList,
@@ -106,3 +106,30 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
                 "Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."
                 == record.message
             ), "Message is wrong"
+
+    def test_parse_mlint_two_clean_files(self):
+        install_list = get_matlab_installs()
+        if len(install_list) == 0:
+            pytest.skip("No Matlab installations found.")
+
+        this_matlab_home = install_list[0]
+        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
+        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
+        handle = MatlabHandle(
+            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
+        )
+        assert handle.is_initialized()
+
+        mlint_handle: MLintHandle = handle.get_mlint_handle()
+
+        file_list = [
+            PureWindowsPath(r"F:\working_copies\imatest\gui\imatest.m"),
+            PureWindowsPath(r"F:\working_copies\imatest\gui\plot2svg.m"),
+        ]
+        mlint_message = r"""========== F:\working_copies\imatest\gui\imatest.m ==========
+========== F:\working_copies\imatest\gui\plot2svg.m =========="""
+
+        linter_reports = mlint_handle.parse_mlint_output(stdout=mlint_message, file_list=file_list)
+
+        assert len(linter_reports) == 2
+        assert all(not r.has_records() for r in linter_reports)
