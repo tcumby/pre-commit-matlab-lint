@@ -106,17 +106,21 @@ class MLintHandle:
                     # Each boundary line is of the form '============ <file path> ============'
                     file_path: str = lines[boundary_index].strip("=").strip()
                     this_report = LinterReport(source_file=Path(file_path))
+
                     start_index = boundary_index + 1
                     end_index = (
-                        len(lines)
-                        if idx == len(boundary_indeces)
+                        len(lines) - 1
+                        if idx == len(boundary_indeces) - 1
                         else boundary_indeces[idx + 1] - 1
                     )
 
-                    for line_index in range(start_index, end_index):
-                        this_report.records.append(
-                            LinterRecord.from_mlint(mlint_message=lines[line_index])
-                        )
+                    has_records = (end_index - start_index + 1) > 0
+                    if has_records:
+                        # There is linter output for this file
+                        for line_index in range(start_index, end_index):
+                            this_report.records.append(
+                                LinterRecord.from_mlint(mlint_message=lines[line_index])
+                            )
 
                     linter_reports.append(this_report)
 
