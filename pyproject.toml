@@ -112,7 +112,7 @@ coverage                 = {extras = ["toml"], version = "^6.0"}
 defusedxml               = "^0.7"
 flake8                   = "^3.9"
 flake8-bugbear           = ">=21"
-flake8-docstrings        = "^1.5"
+flake8-docstrings        = "^1.7"
 pre-commit               = "^2.16"
 pre-commit-hooks         = "^4.1"
 pytest                   = "^6.2"
