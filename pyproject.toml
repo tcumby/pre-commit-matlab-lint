@@ -110,7 +110,7 @@ pyyaml                   = "^6.0"
 bandit                   = "^1.7"
 coverage                 = {extras = ["toml"], version = "^7.2"}
 defusedxml               = "^0.7"
-flake8                   = "^3.9"
+flake8                   = "^5.0"
 flake8-bugbear           = ">=21"
 flake8-docstrings        = "^1.7"
 pre-commit               = "^2.16"
