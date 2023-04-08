@@ -1484,14 +1484,14 @@ go = ["sphinxcontrib-golangdomain"]
 
 [[package]]
 name = "sphinx-copybutton"
-version = "0.4.0"
+version = "0.5.1"
 description = "Add a copy button to each of your code cells."
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "sphinx-copybutton-0.4.0.tar.gz", hash = "sha256:8daed13a87afd5013c3a9af3575cc4d5bec052075ccd3db243f895c07a689386"},
-    {file = "sphinx_copybutton-0.4.0-py3-none-any.whl", hash = "sha256:4340d33c169dac6dd82dce2c83333412aa786a42dd01a81a8decac3b130dc8b0"},
+    {file = "sphinx-copybutton-0.5.1.tar.gz", hash = "sha256:366251e28a6f6041514bfb5439425210418d6c750e98d3a695b73e56866a677a"},
+    {file = "sphinx_copybutton-0.5.1-py3-none-any.whl", hash = "sha256:0842851b5955087a7ec7fc870b622cb168618ad408dee42692e9a5c97d071da8"},
 ]
 
 [package.dependencies]
@@ -1499,7 +1499,7 @@ sphinx = ">=1.8"
 
 [package.extras]
 code-style = ["pre-commit (==2.12.1)"]
-rtd = ["ipython", "sphinx", "sphinx-book-theme"]
+rtd = ["ipython", "myst-nb", "sphinx", "sphinx-book-theme", "sphinx-examples"]
 
 [[package]]
 name = "sphinx-rtd-theme"
@@ -1888,4 +1888,4 @@ all = []
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "8db8a5a1df7d5305160783593e992898ddf8f8e2273a76fd382f7cf51590842c"
+content-hash = "f7312b194d9a8b4735678882679e4b9b539487babdcf3306a092eaddfb738d30"
