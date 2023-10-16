@@ -121,14 +121,14 @@ requests                 = "^2.31"
 sphinx                   = "^4.0"
 sphinx-autoapi           = "^2.0"
 sphinx-copybutton        = "^0.4"
-sphinx-rtd-theme         = "^1.0"
+sphinx-rtd-theme         = "^1.6"
 tomlkit                  = "^0.11"
 
 # These are used directly in the default build pipeline
 # ... but they're generally optional, and the build won't fail if you remove them
 # For example, `mypy` is called in `tox.ini`, but if it's removed then the line
 # will fail without causing the build to fail.
-mypy                     = "^1.0"
+mypy                     = "^1.6"
 
 # These are useful but are not used directly in the default build pipeline
 # that Tyrannosaurus set up for your project
