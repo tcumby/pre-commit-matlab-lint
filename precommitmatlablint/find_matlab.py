@@ -327,7 +327,8 @@ class MatlabHandle:
 
         return version, release, return_code
 
-    def extract_release_version_from_output(self, stdout) -> Tuple[str, str]:
+    @staticmethod
+    def extract_release_version_from_output(stdout) -> Tuple[str, str]:
         release: str = ""
         version: str = ""
         match = re.match(r"(?P<version>[\d+.]+\d+)\s*\((?P<release>R\d+\w)\).*", stdout)
@@ -445,7 +446,7 @@ class MatlabHandleList:
     handles: List[MatlabHandle]
     cache_file: Path
     has_changes: bool
-    __logger: logging.Logger
+    _logger: logging.Logger
 
     def __init__(self, cache_file: Optional[Path] = None, logger: Optional[logging.Logger] = None):
         self.handles = []
@@ -456,28 +457,28 @@ class MatlabHandleList:
 
         self.has_changes = False
         if logger:
-            self.__logger = logger
+            self._logger = logger
         else:
-            self.__logger = logging.getLogger(__name__)
+            self._logger = logging.getLogger(__name__)
 
     def __len__(self) -> int:
         return len(self.handles)
 
     def set_logger(self, logger: logging.Logger):
-        self.__logger = logger
+        self._logger = logger
 
-    def save(self):
+    def save(self) -> None:
         if self.has_changes:
             data: List[Dict[str, str]] = [h.to_dict() for h in self.handles]
 
             with self.cache_file.open("w") as f:
-                self.__logger.debug(f"Saving MATLAB handle list to {self.cache_file}")
+                self._logger.debug(f"Saving MATLAB handle list to {self.cache_file}")
                 yaml.safe_dump(data, f)
                 self.has_changes = False
 
-    def load(self):
+    def load(self) -> None:
         if self.cache_file.exists():
-            self.__logger.debug(f"Cache file {self.cache_file} exists.")
+            self._logger.debug(f"Cache file {self.cache_file} exists.")
             self.clear()
             with self.cache_file.open("r") as f:
                 data = yaml.safe_load(f)
@@ -490,7 +491,7 @@ class MatlabHandleList:
         """Add handles to new MATLAB installs"""
         for home_path in search_list:
             if self.find_home_path(home_path) is None:
-                self.__logger.info(f"Found new MATLAB installation at {home_path}")
+                self._logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)
                 base_exe_path = MatlabHandle.construct_base_exe_path(home_path)
                 handle = MatlabHandle(
@@ -508,17 +509,17 @@ class MatlabHandleList:
             self.remove(handle)
 
     def append(self, handle: MatlabHandle):
-        self.__logger.debug(f"Adding the MATLAB handle for home path {handle.home_path}")
+        self._logger.debug(f"Adding the MATLAB handle for home path {handle.home_path}")
         self.handles.append(handle)
         self.has_changes = True
 
     def remove(self, handle: MatlabHandle):
-        self.__logger.debug(f"Removing the MATLAB handle for home path {handle.home_path}")
+        self._logger.debug(f"Removing the MATLAB handle for home path {handle.home_path}")
         self.handles.remove(handle)
         self.has_changes = True
 
     def insert(self, index: int, handle: MatlabHandle) -> None:
-        self.__logger.debug(f"Inserting the MATLAB handle for home path {handle.home_path}")
+        self._logger.debug(f"Inserting the MATLAB handle for home path {handle.home_path}")
         self.handles.insert(index, handle)
         self.has_changes = True
 
@@ -542,10 +543,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if release_name.lower() == h.release.lower()]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f"Handle for MATLAB release {release_name} found.")
+            self._logger.info(f"Handle for MATLAB release {release_name} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f"Handle for MATLAB release name {release_name} not found.")
+            self._logger.warning(f"Handle for MATLAB release name {release_name} not found.")
 
         return handle
 
@@ -567,21 +568,21 @@ class MatlabHandleList:
         matches = [h for h in self.handles if version in h.version]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f"Handle for MATLAB version {version} found.")
+            self._logger.info(f"Handle for MATLAB version {version} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f"Handle for MATLAB version {version} not found.")
+            self._logger.warning(f"Handle for MATLAB version {version} not found.")
 
         return handle
 
     def find_home_path(self, matlab_home_path: Path) -> Optional[MatlabHandle]:
-        r"""Find the path to a MATLAB executable specified by its home path.
+        """Find the MatlabHandle corresponding to the supplied MATLAB home path
 
         Parameters
         __________
         matlab_home_path: Path
                                 A folder path to a MATLAB install home path (e.g.
-                                C:\Program Files\MATLAB\R2021a)
+                                C:\\Program Files\\MATLAB\\R2021a)
 
         Returns
         _______
@@ -592,10 +593,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if matlab_home_path == h.home_path]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f"Handle for MATLAB at {matlab_home_path} found.")
+            self._logger.info(f"Handle for MATLAB at {matlab_home_path} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f"Handle for MATLAB at {matlab_home_path} not found")
+            self._logger.warning(f"Handle for MATLAB at {matlab_home_path} not found")
 
         return handle
 
@@ -617,10 +618,10 @@ class MatlabHandleList:
         matches = [h for h in self.handles if matlab_exe_path == h.exe_path]
         if len(matches) > 0:
             handle = matches[0]
-            self.__logger.info(f"Handle for MATLAB at {matlab_exe_path} found.")
+            self._logger.info(f"Handle for MATLAB at {matlab_exe_path} found.")
         else:
             # TODO search for MATLAB if not found
-            self.__logger.warning(f"Handle for MATLAB at {matlab_exe_path} not found.")
+            self._logger.warning(f"Handle for MATLAB at {matlab_exe_path} not found.")
 
         return handle
 
