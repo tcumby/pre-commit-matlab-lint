@@ -9,7 +9,7 @@ from precommitmatlablint.find_matlab import (
     get_matlab_installs,
     MatlabHandle,
     MLintHandle,
-    LinterRecord,
+    LinterRecord, LinterReport,
 )
 from precommitmatlablint.lint_matlab import validate_matlab, main
 from precommitmatlablint.return_code import ReturnCode
@@ -513,7 +513,7 @@ class TestLintMatlab:
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
 
-        linter_records: List[LinterRecord] = mlint_handle.lint(
+        linter_records: List[LinterReport] = mlint_handle.lint(
             filepaths=[test_file],
             fail_warnings=fail_warnings,
             enable_cyc=enable_cyc,
