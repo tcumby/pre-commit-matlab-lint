@@ -116,6 +116,12 @@ def validate_matlab(
     if logger is None:
         logger = logging.getLogger(__name__)
 
+    m_lint_handle = matlab_handle.get_mlint_handle()
+    if m_lint_handle and m_lint_handle.exe_path.exists():
+        pass
+    else:
+        pass
+
     matlab_script: str = construct_matlab_script(
         filepaths,
         fail_warnings,
