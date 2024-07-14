@@ -23,6 +23,9 @@ class LinterRecord:
     line: int = 0
     columns: List[int] = field(default_factory=list)
 
+    def __str__(self):
+        return f"Line{self.line} (Columns {self.columns[0]}-{self.columns[1]}): {self.id}: {self.message}"
+
     @classmethod
     def from_mlint(cls, mlint_message: str) -> "LinterRecord":
         mlint_elements = mlint_message.split(":")
@@ -68,7 +71,6 @@ class MLintHandle:
     exe_path: Path
 
     def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
-
         linter_reports: List[LinterReport]
 
         command = [str(self.exe_path)]
@@ -100,38 +102,28 @@ class MLintHandle:
                     this_report.records.append(LinterRecord.from_mlint(mlint_message=line))
                 linter_reports.append(this_report)
             elif len(file_list) > 1:
-                boundary_indeces = [
-                    idx for (idx, line) in enumerate(lines) if line.startswith("===")
-                ]
+                boundary_indeces = [idx for (idx, line) in enumerate(lines) if line.startswith("===")]
 
-                for (idx, boundary_index) in enumerate(boundary_indeces):
+                for idx, boundary_index in enumerate(boundary_indeces):
                     # Each boundary line is of the form '============ <file path> ============'
                     file_path: str = lines[boundary_index].strip("=").strip()
                     this_report = LinterReport(source_file=Path(file_path))
 
                     start_index = boundary_index + 1
-                    end_index = (
-                        len(lines)
-                        if idx == len(boundary_indeces) - 1
-                        else boundary_indeces[idx + 1]
-                    )
+                    end_index = len(lines) if idx == len(boundary_indeces) - 1 else boundary_indeces[idx + 1]
 
                     has_records = (end_index - start_index + 1) > 0
                     if has_records:
                         # There is linter output for this file
                         for line_index in range(start_index, end_index):
-                            this_report.records.append(
-                                LinterRecord.from_mlint(mlint_message=lines[line_index])
-                            )
+                            this_report.records.append(LinterRecord.from_mlint(mlint_message=lines[line_index]))
 
                     linter_reports.append(this_report)
 
         return linter_reports
 
     @classmethod
-    def construct_command_arguments(
-        cls, filepaths: List[Path], options: LinterOptions
-    ) -> List[str]:
+    def construct_command_arguments(cls, filepaths: List[Path], options: LinterOptions) -> List[str]:
         file_list = [f"'{str(f)}'" for f in filepaths]
 
         level_option = "'-m0'" if options.fail_warnings else "'-m2'"
@@ -169,15 +161,11 @@ class MatlabHandle:
     def __post_init__(self):
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
-            self.version, self.release = MatlabHandle.read_version_info(
-                self.get_version_info_file()
-            )
+            self.version, self.release = MatlabHandle.read_version_info(self.get_version_info_file())
 
         if len(self.version) == 0 and len(self.release) == 0:
             # Try to get the version and release name from a product info XML file at <MATLAB home>/appdata/products
-            self.version, self.release = MatlabHandle.read_product_info(
-                self.get_product_info_file()
-            )
+            self.version, self.release = MatlabHandle.read_product_info(self.get_product_info_file())
 
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
@@ -193,9 +181,7 @@ class MatlabHandle:
         products_folder = self.home_path / "appdata" / "products"
         arch: str = MatlabHandle.get_architecture_folder_name()
         files = [
-            f
-            for f in products_folder.glob("MATLAB*.xml")
-            if re.match(rf"MATLAB\s*\d+\.\d+\s*{arch}.*.xml", f.name)
+            f for f in products_folder.glob("MATLAB*.xml") if re.match(rf"MATLAB\s*\d+\.\d+\s*{arch}.*.xml", f.name)
         ]
         if len(files) > 0:
             info_file = files[0]
@@ -203,17 +189,10 @@ class MatlabHandle:
         return info_file
 
     def get_mlint_handle(self) -> MLintHandle:
-        return MLintHandle(
-            exe_path=Path(self.home_path, "bin", self.get_architecture_folder_name(), "mlint")
-        )
+        return MLintHandle(exe_path=Path(self.home_path, "bin", self.get_architecture_folder_name(), "mlint"))
 
     def is_initialized(self) -> bool:
-        return (
-            self.is_valid()
-            and len(self.version) > 0
-            and len(self.release) > 0
-            and len(self.checksum) > 0
-        )
+        return self.is_valid() and len(self.version) > 0 and len(self.release) > 0 and len(self.checksum) > 0
 
     def is_valid(self) -> bool:
         return self.exe_path.exists() and self.exe_path.is_file()
@@ -311,9 +290,7 @@ class MatlabHandle:
             release, version = self.extract_release_version_from_output(stdout)
             if len(release) == 0 and len(version) == 0:
                 # This MATLAB instance is not returning info to stdout, so output to file instead
-                print(
-                    f"This MATLAB instance {self.home_path} failed to return anything via stdout."
-                )
+                print(f"This MATLAB instance {self.home_path} failed to return anything via stdout.")
                 with TemporaryDirectory() as base_path:
                     matlab_log_file = Path(base_path) / "MATLAB_output.txt"
                     _, return_code = self.run(
@@ -367,18 +344,11 @@ class MatlabHandle:
             self.checksum: str = self.compute_checksum()
             version_info_file: Path = self.get_version_info_file()
             if version_info_file.exists():
-                self.version, self.release = MatlabHandle.read_version_info(
-                    self.get_version_info_file()
-                )
+                self.version, self.release = MatlabHandle.read_version_info(self.get_version_info_file())
 
     @classmethod
     def construct_base_exe_path(cls, home_path: Path) -> Path:
-        return (
-            home_path
-            / "bin"
-            / MatlabHandle.get_architecture_folder_name()
-            / MatlabHandle.get_matlab_exe_name()
-        )
+        return home_path / "bin" / MatlabHandle.get_architecture_folder_name() / MatlabHandle.get_matlab_exe_name()
 
     @classmethod
     def construct_exe_path(cls, home_path: Path) -> Path:
@@ -494,9 +464,7 @@ class MatlabHandleList:
                 self._logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)
                 base_exe_path = MatlabHandle.construct_base_exe_path(home_path)
-                handle = MatlabHandle(
-                    home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path
-                )
+                handle = MatlabHandle(home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path)
                 self.append(handle)
 
     def prune(self) -> None:
@@ -661,23 +629,15 @@ def get_matlab_installs() -> List[Path]:
     root_path = get_matlab_root(this_platform)
     if "win32" == this_platform:
         if root_path.exists():
-            matlab_home_paths = [
-                d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
-            ]
+            matlab_home_paths = [d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)]
             matlab_home_paths = sorted(matlab_home_paths, reverse=True)
-        matlab_home_paths = sorted(
-            list(set(sorted(matlab_home_paths + get_matlab_registry_installs()))), reverse=True
-        )
+        matlab_home_paths = sorted(list(set(sorted(matlab_home_paths + get_matlab_registry_installs()))), reverse=True)
     elif "darwin" == this_platform:
-        matlab_home_paths = [
-            d for d in root_path.iterdir() if d.is_dir() and re.match(r"MATLAB_R\d+\w", d.stem)
-        ]
+        matlab_home_paths = [d for d in root_path.iterdir() if d.is_dir() and re.match(r"MATLAB_R\d+\w", d.stem)]
         matlab_home_paths = sorted(matlab_home_paths, reverse=True)
     elif "linux" == this_platform:
         if root_path.exists():
-            matlab_home_paths = [
-                d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)
-            ]
+            matlab_home_paths = [d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)]
             matlab_home_paths = sorted(matlab_home_paths, reverse=True)
 
     return matlab_home_paths
@@ -796,9 +756,7 @@ def find_matlab(
             logger.info("The MATLAB interpreter has not been cached previously.")
             exe_path: Path = MatlabHandle.construct_exe_path(matlab_home_path)
             base_exe_path: Path = MatlabHandle.construct_base_exe_path(matlab_home_path)
-            test_handle = MatlabHandle(
-                home_path=matlab_home_path, exe_path=exe_path, base_exe_path=base_exe_path
-            )
+            test_handle = MatlabHandle(home_path=matlab_home_path, exe_path=exe_path, base_exe_path=base_exe_path)
             handle = test_handle if test_handle.is_initialized() else None
             if handle is not None:
                 handle_list.append(handle)

@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-from precommitmatlablint.find_matlab import find_matlab, MatlabHandle
+from precommitmatlablint.find_matlab import find_matlab, MatlabHandle, LinterOptions
 from precommitmatlablint.return_code import ReturnCode
 
 
@@ -117,8 +117,20 @@ def validate_matlab(
         logger = logging.getLogger(__name__)
 
     m_lint_handle = matlab_handle.get_mlint_handle()
+    options = LinterOptions(
+        fail_warnings=fail_warnings,
+        enable_cyc=enable_cyc,
+        enable_mod_cyc=enable_mod_cyc,
+        ignore_ok_pragmas=ignore_ok_pragmas,
+        use_factory_default=use_factory_default,
+        checkcode_config_file=checkcode_config_file,
+    )
     if m_lint_handle and m_lint_handle.exe_path.exists():
-        pass
+        linter_records = m_lint_handle.lint(filepaths=filepaths, options=options)
+        if len(linter_records) > 0:
+            print(f"checkcode found issues:")
+            for record in linter_records:
+                print(record)
     else:
         pass
 
@@ -167,11 +179,7 @@ def validate_matlab(
                     return_codes.append(return_code)
                     print_linter_result(this_file, this_linter_results)
 
-                return_code = (
-                    ReturnCode.FAIL
-                    if any([r == ReturnCode.FAIL for r in return_codes])
-                    else ReturnCode.OK
-                )
+                return_code = ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
             else:
                 # If there is no stdout from MATLAB, then there were no errors
                 logger.info("No results were returned from MATLAB")
@@ -205,9 +213,7 @@ def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
             this_return_code = ReturnCode.FAIL if result["id"] not in allowed_ids else ReturnCode.OK
             return_codes.append(this_return_code)
 
-        return_code = (
-            ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
-        )
+        return_code = ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
 
     return return_code
 
@@ -224,7 +230,6 @@ def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-
     logger = logging.getLogger(__name__)
 
     """Parse commandline arguments and validate the supplied files through MATLAB's checkcode function."""
@@ -252,9 +257,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default=None,
         help="The release name of MATLAB to use.",
     )
-    parser.add_argument(
-        "--treat-warning-as-error", action="store_true", help="Treat all warnings as errors"
-    )
+    parser.add_argument("--treat-warning-as-error", action="store_true", help="Treat all warnings as errors")
 
     parser.add_argument(
         "--enable-modified-cyclomaticity",
@@ -266,9 +269,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
-    parser.add_argument(
-        "--ignore-ok-pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas"
-    )
+    parser.add_argument("--ignore-ok-pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas")
     parser.add_argument(
         "--checkcode-config-file",
         action="store",
