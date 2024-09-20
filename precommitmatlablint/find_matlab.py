@@ -70,6 +70,9 @@ class LinterOptions:
 class MLintHandle:
     exe_path: Path
 
+    def is_valid(self)->bool:
+        return self.exe_path.exists()
+
     def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
         linter_reports: List[LinterReport]
 
