@@ -144,10 +144,23 @@ def validate_matlab(
         checkcode_config_file,
     )
 
+    mlint_handle = matlab_handle.get_mlint_handle()
+    linter_options = LinterOptions(fail_warnings,
+        enable_cyc,
+        enable_mod_cyc,
+        ignore_ok_pragmas,
+        use_factory_default,
+        checkcode_config_file)
+    if mlint_handle.is_valid():
+        linter_reports = mlint_handle.lint(filepaths, linter_options)
+    else:
+        pass
     print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
     stdout, return_code = matlab_handle.run(matlab_script)
     logger.debug(f"MATLAB stdout: {stdout}")
     logger.debug(f"MATLAB return code: {return_code}")
+
+
     try:
         if len(filepaths) == 1:
             this_file = filepaths[0]
