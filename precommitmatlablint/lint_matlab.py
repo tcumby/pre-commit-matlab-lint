@@ -136,7 +136,6 @@ def validate_matlab(
                 for record in report.records:
                     print(record)
     else:
-
         matlab_script: str = construct_matlab_script(
             filepaths,
             fail_warnings,
@@ -151,7 +150,6 @@ def validate_matlab(
         stdout, return_code = matlab_handle.run(matlab_script)
         logger.debug(f"MATLAB stdout: {stdout}")
         logger.debug(f"MATLAB return code: {return_code}")
-
 
         try:
             if len(filepaths) == 1:
@@ -184,7 +182,9 @@ def validate_matlab(
                         return_codes.append(return_code)
                         print_linter_result(this_file, this_linter_results)
 
-                    return_code = ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
+                    return_code = (
+                        ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
+                    )
                 else:
                     # If there is no stdout from MATLAB, then there were no errors
                     logger.info("No results were returned from MATLAB")

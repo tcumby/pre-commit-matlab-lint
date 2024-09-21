@@ -4,15 +4,15 @@ import os
 import re
 import subprocess
 import sys
-from tempfile import TemporaryDirectory
-
-import defusedxml.ElementTree as ElementTree  # type: ignore
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import List, Optional, Tuple, Dict
 
+import defusedxml.ElementTree as ElementTree
 import yaml
 
+from precommitmatlablint.lint_matlab import construct_matlab_script
 from precommitmatlablint.return_code import ReturnCode
 
 
@@ -306,6 +306,29 @@ class MatlabHandle:
                     matlab_log_file.unlink()
 
         return version, release, return_code
+
+    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
+        linter_reports: List[LinterReport]
+
+        matlab_script: str = construct_matlab_script(
+            filepaths,
+            options.fail_warnings,
+            options.enable_cyc,
+            options.enable_mod_cyc,
+            options.ignore_ok_pragmas,
+            options.use_factory_default,
+            options.checkcode_config_file,
+        )
+
+        print(f"Validating MATLAB files using {str(self.exe_path)}")
+        stdout, return_code = self.run(matlab_script)
+        logger.debug(f"MATLAB stdout: {stdout}")
+        logger.debug(f"MATLAB return code: {return_code}")
+
+        # TODO flesh out stdout parsing
+
+        return linter_reports
+
 
     @staticmethod
     def extract_release_version_from_output(stdout) -> Tuple[str, str]:
