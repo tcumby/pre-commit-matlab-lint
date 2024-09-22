@@ -127,72 +127,75 @@ def validate_matlab(
     )
     if m_lint_handle and m_lint_handle.is_valid():
         linter_reports = m_lint_handle.lint(filepaths=filepaths, options=options)
-        if len(linter_reports) > 0:
-            print(f"mlint found issues:")
-            for report in linter_reports:
-                print(report.source_file)
-                if len(report.records) > 0:
-                    return_code = ReturnCode.FAIL
-                for record in report.records:
-                    print(record)
+
     else:
-        matlab_script: str = construct_matlab_script(
-            filepaths,
-            fail_warnings,
-            enable_cyc,
-            enable_mod_cyc,
-            ignore_ok_pragmas,
-            use_factory_default,
-            checkcode_config_file,
-        )
+        linter_reports = matlab_handle.lint(filepaths=filepaths, options=options)
 
-        print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
-        stdout, return_code = matlab_handle.run(matlab_script)
-        logger.debug(f"MATLAB stdout: {stdout}")
-        logger.debug(f"MATLAB return code: {return_code}")
-
-        try:
-            if len(filepaths) == 1:
-                this_file = filepaths[0]
-
-                if len(stdout) > 0:
-                    logger.info("MATLAB returned linter warnings and/or errors.")
-                    linter_results: List[Dict[str, Any]] = json.loads(stdout)
-                    if isinstance(linter_results, dict):
-                        linter_results = [linter_results]
-
-                    return_code = inspect_linter_result(linter_results)
-                    print_linter_result(this_file, linter_results)
-                else:
-                    # If there is no stdout from MATLAB, then there were no errors
-                    logger.info("No results were returned from MATLAB")
-                    return_code = ReturnCode.OK
-
-            elif len(filepaths) > 1:
-                if len(stdout) > 0:
-                    logger.info("MATLAB returned linter warnings and/or errors.")
-                    linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
-                    return_codes: List[ReturnCode] = []
-                    for index, this_file in enumerate(filepaths):
-                        this_linter_results = linter_results_list[index]
-                        if isinstance(this_linter_results, dict):
-                            this_linter_results = [this_linter_results]
-
-                        return_code = inspect_linter_result(this_linter_results)
-                        return_codes.append(return_code)
-                        print_linter_result(this_file, this_linter_results)
-
-                    return_code = (
-                        ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
-                    )
-                else:
-                    # If there is no stdout from MATLAB, then there were no errors
-                    logger.info("No results were returned from MATLAB")
-                    return_code = ReturnCode.OK
-
-        except json.JSONDecodeError as err:
-            return_code = ReturnCode.FAIL
-            logger.error(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
+    if len(linter_reports) > 0:
+        print(f"mlint found issues:")
+        for report in linter_reports:
+            print(report.source_file)
+            if len(report.records) > 0:
+                return_code = ReturnCode.FAIL
+            for record in report.records:
+                print(record)
+        # matlab_script: str = construct_matlab_script(
+        #     filepaths,
+        #     fail_warnings,
+        #     enable_cyc,
+        #     enable_mod_cyc,
+        #     ignore_ok_pragmas,
+        #     use_factory_default,
+        #     checkcode_config_file,
+        # )
+        #
+        # print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
+        # stdout, return_code = matlab_handle.run(matlab_script)
+        # logger.debug(f"MATLAB stdout: {stdout}")
+        # logger.debug(f"MATLAB return code: {return_code}")
+        #
+        # try:
+        #     if len(filepaths) == 1:
+        #         this_file = filepaths[0]
+        #
+        #         if len(stdout) > 0:
+        #             logger.info("MATLAB returned linter warnings and/or errors.")
+        #             linter_results: List[Dict[str, Any]] = json.loads(stdout)
+        #             if isinstance(linter_results, dict):
+        #                 linter_results = [linter_results]
+        #
+        #             return_code = inspect_linter_result(linter_results)
+        #             print_linter_result(this_file, linter_results)
+        #         else:
+        #             # If there is no stdout from MATLAB, then there were no errors
+        #             logger.info("No results were returned from MATLAB")
+        #             return_code = ReturnCode.OK
+        #
+        #     elif len(filepaths) > 1:
+        #         if len(stdout) > 0:
+        #             logger.info("MATLAB returned linter warnings and/or errors.")
+        #             linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
+        #             return_codes: List[ReturnCode] = []
+        #             for index, this_file in enumerate(filepaths):
+        #                 this_linter_results = linter_results_list[index]
+        #                 if isinstance(this_linter_results, dict):
+        #                     this_linter_results = [this_linter_results]
+        #
+        #                 return_code = inspect_linter_result(this_linter_results)
+        #                 return_codes.append(return_code)
+        #                 print_linter_result(this_file, this_linter_results)
+        #
+        #             return_code = (
+        #                 ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
+        #             )
+        #         else:
+        #             # If there is no stdout from MATLAB, then there were no errors
+        #             logger.info("No results were returned from MATLAB")
+        #             return_code = ReturnCode.OK
+        #
+        # except json.JSONDecodeError as err:
+        #     return_code = ReturnCode.FAIL
+        #     logger.error(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
 
     logger.info(f"MATLAB lint result: {return_code}")
     return return_code

@@ -350,7 +350,7 @@ class MatlabHandle(Linter):
                     this_report.records.append(this_record)
 
                 linter_reports.append(this_report)
-                
+
 
         return linter_reports
 
