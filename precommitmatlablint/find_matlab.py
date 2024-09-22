@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import os
 import re
@@ -7,13 +8,14 @@ import sys
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, Protocol
 
 import defusedxml.ElementTree as ElementTree
 import yaml
 
 from precommitmatlablint.lint_matlab import construct_matlab_script
 from precommitmatlablint.return_code import ReturnCode
+
 
 
 @dataclass(frozen=True)
@@ -66,8 +68,12 @@ class LinterOptions:
     checkcode_config_file: Optional[Path] = None
 
 
+class Linter(Protocol):
+    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]
+        pass
+
 @dataclass(frozen=True)
-class MLintHandle:
+class MLintHandle(Linter):
     exe_path: Path
 
     def is_valid(self) -> bool:
@@ -151,7 +157,7 @@ class MLintHandle:
 
 
 @dataclass
-class MatlabHandle:
+class MatlabHandle(Linter):
     """A class to provide a simple interface to a MATLAB executable instance."""
 
     home_path: Path
@@ -325,10 +331,28 @@ class MatlabHandle:
         logger.debug(f"MATLAB stdout: {stdout}")
         logger.debug(f"MATLAB return code: {return_code}")
 
-        # TODO flesh out stdout parsing
+        checkcode_data = json.loads(stdout)
+
+        if len(filepaths) == 1:
+            this_report = LinterReport(source_file=filepaths[0])
+            for issue in checkcode_data:
+                this_record = LinterRecord(id=issue['id'], line=issue['line'], columns=issue['column'], message=issue['message'])
+                this_report.records.append(this_record)
+
+            linter_reports.append(this_report)
+        else:
+            for index, this_file in enumerate(filepaths):
+                this_report = LinterReport(source_file=this_file)
+                this_linter_results = checkcode_data[index]
+                for issue in this_linter_results:
+                    this_record = LinterRecord(id=issue['id'], line=issue['line'], columns=issue['column'],
+                                               message=issue['message'])
+                    this_report.records.append(this_record)
+
+                linter_reports.append(this_report)
+                
 
         return linter_reports
-
 
     @staticmethod
     def extract_release_version_from_output(stdout) -> Tuple[str, str]:
