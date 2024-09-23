@@ -69,7 +69,7 @@ class LinterOptions:
 
 
 class Linter(Protocol):
-    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]
+    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
         pass
 
 @dataclass(frozen=True)
@@ -314,7 +314,7 @@ class MatlabHandle(Linter):
         return version, release, return_code
 
     def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
-        linter_reports: List[LinterReport]
+        linter_reports: List[LinterReport] = []
 
         matlab_script: str = construct_matlab_script(
             filepaths,
@@ -328,8 +328,6 @@ class MatlabHandle(Linter):
 
         print(f"Validating MATLAB files using {str(self.exe_path)}")
         stdout, return_code = self.run(matlab_script)
-        logger.debug(f"MATLAB stdout: {stdout}")
-        logger.debug(f"MATLAB return code: {return_code}")
 
         checkcode_data = json.loads(stdout)
 
