@@ -10,12 +10,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List, Optional, Tuple, Dict, Protocol
 
-import defusedxml.ElementTree as ElementTree
+import defusedxml.ElementTree as ElementTree  # type: ignore[import-untyped]
 import yaml
 
 from precommitmatlablint.lint_matlab import construct_matlab_script
 from precommitmatlablint.return_code import ReturnCode
-
 
 
 @dataclass(frozen=True)
@@ -71,6 +70,7 @@ class LinterOptions:
 class Linter(Protocol):
     def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
         pass
+
 
 @dataclass(frozen=True)
 class MLintHandle(Linter):
@@ -223,7 +223,7 @@ class MatlabHandle(Linter):
         stdout: str = ""
         return_code = ReturnCode.FAIL
         if self.is_valid():
-            command: List[str] = self.__construct_command(matlab_command)
+            command: List[str] = self._construct_command(matlab_command)
 
             try:
                 completed_process = subprocess.run(command, text=True, capture_output=True)
@@ -235,9 +235,9 @@ class MatlabHandle(Linter):
                 print(f"Failed to run MATLAB command '{matlab_command}': {str(err)}")
         return stdout, return_code
 
-    def __construct_command(self, matlab_command: str) -> List[str]:
+    def _construct_command(self, matlab_command: str) -> List[str]:
         """Construct the command-line command to execute the MATLAB command."""
-        major, minor = self.__parse_version_string()
+        major, minor = self._parse_version_string()
 
         command: List[str] = [str(self.exe_path), "-nosplash", "-nodesktop"]
         if sys.platform == "win32":
@@ -259,7 +259,7 @@ class MatlabHandle(Linter):
 
         return command
 
-    def __parse_version_string(self) -> Tuple[int, int]:
+    def _parse_version_string(self) -> Tuple[int, int]:
         """Extract the major and minor version number from the version string of the form
         <major>.<minor>.<point>.<patch>
 
@@ -334,7 +334,9 @@ class MatlabHandle(Linter):
         if len(filepaths) == 1:
             this_report = LinterReport(source_file=filepaths[0])
             for issue in checkcode_data:
-                this_record = LinterRecord(id=issue['id'], line=issue['line'], columns=issue['column'], message=issue['message'])
+                this_record = LinterRecord(
+                    id=issue["id"], line=issue["line"], columns=issue["column"], message=issue["message"]
+                )
                 this_report.records.append(this_record)
 
             linter_reports.append(this_report)
@@ -343,12 +345,12 @@ class MatlabHandle(Linter):
                 this_report = LinterReport(source_file=this_file)
                 this_linter_results = checkcode_data[index]
                 for issue in this_linter_results:
-                    this_record = LinterRecord(id=issue['id'], line=issue['line'], columns=issue['column'],
-                                               message=issue['message'])
+                    this_record = LinterRecord(
+                        id=issue["id"], line=issue["line"], columns=issue["column"], message=issue["message"]
+                    )
                     this_report.records.append(this_record)
 
                 linter_reports.append(this_report)
-
 
         return linter_reports
 
