@@ -13,8 +13,8 @@ from typing import List, Optional, Tuple, Dict, Protocol
 import defusedxml.ElementTree as ElementTree  # type: ignore[import-untyped]
 import yaml
 
-from precommitmatlablint.lint_matlab import construct_matlab_script
 from precommitmatlablint.return_code import ReturnCode
+from precommitmatlablint.utility import construct_matlab_script
 
 
 @dataclass(frozen=True)
