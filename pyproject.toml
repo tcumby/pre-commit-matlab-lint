@@ -35,7 +35,6 @@ name = "precommitmatlablint"
 # not all tools are compatible with it, so avoid it if you can.
 version = "1.0.5"
 
-# TODO: Set the description and keywords here
 description = "A pre-commit hook to validate MATLAB code."
 keywords = [""]
 authors = ["Ty Cumby"]
@@ -218,13 +217,6 @@ long_description   = "tool.poetry.description"
 #doc_license        = "'all rights reserved'"
 
 # --- AUTHOR INFO ---
-# TODO Fill in authors, contributors, and maintainers
-# Use this syntax: "Person Name <id:value,[id:value, [...]]>"
-# Specifying github usernames is recommended
-# ORCID IDs can also be referenced
-#authors = [
-#    "<<Author Name>> <github:<<username>>,orcid:<<id>>>"
-#]
 authors = [ "Ty Cumby <github:tcumby>" ]
 contributors = [ "Ty Cumby <github:tcumby>" ]
 # Turn this into a literal list if it is different than the authors
