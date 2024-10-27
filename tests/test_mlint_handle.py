@@ -5,13 +5,10 @@ import pytest  # noqa: F401 # pylint: disable=unused-import
 from pathlib import Path, PureWindowsPath
 
 from precommitmatlablint.find_matlab import (
-    MatlabHandleList,
     get_matlab_installs,
-    MatlabHandle,
-    MLintHandle,
-    LinterRecord,
-    LinterReport,
 )
+from precommitmatlablint.linter_handle import MLintHandle, MatlabHandle, MatlabHandleList
+from precommitmatlablint.linter_results import LinterRecord, LinterReport
 
 
 @pytest.fixture(scope="module")
@@ -40,9 +37,7 @@ class TestMLintHandle:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -78,9 +73,7 @@ class TestMLintHandle:
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -115,9 +108,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -142,9 +133,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         this_matlab_home = install_list[0]
         matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
         base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()

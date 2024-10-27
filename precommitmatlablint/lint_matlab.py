@@ -3,7 +3,8 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-from precommitmatlablint.find_matlab import find_matlab, MatlabHandle, LinterOptions
+from precommitmatlablint.find_matlab import find_matlab
+from precommitmatlablint.linter_handle import LinterOptions, MatlabHandle
 from precommitmatlablint.return_code import ReturnCode
 
 

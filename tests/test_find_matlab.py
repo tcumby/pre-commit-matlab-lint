@@ -7,10 +7,9 @@ import pytest  # noqa: F401 # pylint: disable=unused-import
 
 from precommitmatlablint.find_matlab import (
     get_matlab_installs,
-    MatlabHandle,
-    MatlabHandleList,
     find_matlab,
 )
+from precommitmatlablint.linter_handle import MatlabHandle, MatlabHandleList
 from precommitmatlablint.return_code import ReturnCode
 
 
@@ -46,9 +45,7 @@ class TestFindMatlab:
         assert all([s.is_dir() and s.exists() for s in install_list])
 
         # Check that there is a MATLAB executable in the correct sub-directory relative to the returned folder path
-        assert all(
-            [Path(s, "bin", MatlabHandle.get_matlab_exe_name()).exists for s in install_list]
-        )
+        assert all([Path(s, "bin", MatlabHandle.get_matlab_exe_name()).exists for s in install_list])
 
     def test_refresh(self):
         install_list = get_matlab_installs()
@@ -272,7 +269,7 @@ class TestFindMatlab:
         handle: MatlabHandle
         for handle in handle_list.handles:
             product_info = handle.get_product_info_file()
-            version, release_name= MatlabHandle.read_product_info(product_info)
+            version, release_name = MatlabHandle.read_product_info(product_info)
 
             assert len(version) > 0, f"Failed to get version for {handle.home_path}"
             assert len(release_name) > 0, f"Failed to get release name for {handle.home_path}"
