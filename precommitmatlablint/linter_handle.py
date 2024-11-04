@@ -158,7 +158,14 @@ class MatlabHandle(Linter):
         return info_file
 
     def get_mlint_handle(self) -> MLintHandle:
-        return MLintHandle(exe_path=Path(self.home_path, "bin", self.get_architecture_folder_name(), "mlint"))
+        return MLintHandle(
+            exe_path=Path(
+                self.home_path,
+                "bin",
+                self.get_architecture_folder_name(),
+                "mlint.exe" if sys.platform == "win32" else "mlint",
+            )
+        )
 
     def is_initialized(self) -> bool:
         return self.is_valid() and len(self.version) > 0 and len(self.release) > 0 and len(self.checksum) > 0
