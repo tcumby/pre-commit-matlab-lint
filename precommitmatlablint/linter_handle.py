@@ -53,7 +53,6 @@ class MLintHandle(Linter):
         completed_process = subprocess.run(command, capture_output=True, text=True)
 
         stderr = completed_process.stderr
-        stdout = completed_process.stdout
 
         linter_reports = self.parse_mlint_output(stderr, filepaths)
 
