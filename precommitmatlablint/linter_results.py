@@ -12,7 +12,12 @@ class LinterRecord:
     columns: List[int] = field(default_factory=list)
 
     def __str__(self):
-        return f"Line{self.line} (Columns {self.columns[0]}-{self.columns[1]}): {self.id}: {self.message}"
+        if len(self.columns) == 2:
+            return f"Line {self.line} (Columns {self.columns[0]}-{self.columns[1]}): {self.id}: {self.message}"
+        elif len(self.columns) == 1:
+            return f"Line {self.line} (Column {self.columns[0]}): {self.id}: {self.message}"
+        else:
+            return f"Line {self.line}: {self.id}: {self.message}"
 
     @classmethod
     def from_mlint(cls, mlint_message: str) -> "LinterRecord":
@@ -22,15 +27,20 @@ class LinterRecord:
         id: str = mlint_elements[1].strip()
         message: str = mlint_elements[2].strip()
         match = re.match(
-            pattern=r".*L\s*(?P<line>\d+)\s*\(C\s*(?P<column_min>\d+)\-(?P<column_max>\d+)\)",
+            pattern=r".*L\s*(?P<line>\d+)\s*\(C\s*(?P<column_min>\d+)(\-(?P<column_max>\d+)\))?",
             string=line_and_column,
         )
         line: int = 0
         columns: List[int] = []
         if match:
             line = int(match.group("line"))
-            columns.append(int(match.group("column_min")))
-            columns.append(int(match.group("column_max")))
+
+            column_min = match.group("column_min")
+            columns.append(int(column_min))
+
+            column_max = match.group("column_max")
+            if column_max:
+                columns.append(int(column_max))
 
         return LinterRecord(id=id, message=message, line=line, columns=columns)
 
