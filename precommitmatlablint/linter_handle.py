@@ -52,9 +52,10 @@ class MLintHandle(Linter):
 
         completed_process = subprocess.run(command, capture_output=True, text=True)
 
+        stderr = completed_process.stderr
         stdout = completed_process.stdout
 
-        linter_reports = self.parse_mlint_output(stdout, filepaths)
+        linter_reports = self.parse_mlint_output(stderr, filepaths)
 
         return linter_reports
 
@@ -93,25 +94,24 @@ class MLintHandle(Linter):
 
     @classmethod
     def construct_command_arguments(cls, filepaths: List[Path], options: LinterOptions) -> List[str]:
-        file_list = [f"'{str(f)}'" for f in filepaths]
 
-        level_option = "'-m0'" if options.fail_warnings else "'-m2'"
-        arguments: List = [level_option, "'-id'"]
+        level_option = "-m0" if options.fail_warnings else "-m2"
+        arguments: List = [level_option, "-id"]
         if options.enable_cyc:
-            arguments.append("'-cyc'")
+            arguments.append("-cyc")
 
         if options.enable_mod_cyc:
-            arguments.append("'-modcyc'")
+            arguments.append("-modcyc")
 
         if options.ignore_ok_pragmas:
-            arguments.append("'-notok'")
+            arguments.append("-notok")
 
         if options.use_factory_default:
-            arguments.append("'-config=factory'")
+            arguments.append("-config=factory")
         elif options.checkcode_config_file:
-            arguments.append(f"'-config={str(options.checkcode_config_file)}'")
+            arguments.append(f"-config={str(options.checkcode_config_file)}")
 
-        arguments = arguments + file_list
+        arguments = arguments + filepaths
 
         return arguments
 
