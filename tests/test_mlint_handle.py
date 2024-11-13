@@ -45,7 +45,7 @@ class TestMLintHandle:
         mlint_message = "L 6402 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."
 
         linter_reports: List[LinterReport] = mlint_handle.parse_mlint_output(
-            stdout=mlint_message, file_list=[test_file]
+            stderr=mlint_message, file_list=[test_file]
         )
 
         assert len(linter_reports) == 1
@@ -83,7 +83,7 @@ L 3696 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
 L 3757 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead.
 L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."""
         linter_reports: List[LinterReport] = mlint_handle.parse_mlint_output(
-            stdout=mlint_message, file_list=[test_file]
+            stderr=mlint_message, file_list=[test_file]
         )
         assert len(linter_reports) == 1
         linter_records: List[LinterRecord] = linter_reports[0].records
@@ -120,7 +120,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         mlint_message = r"""========== F:\working_copies\imatest\gui\imatest.m ==========
 ========== F:\working_copies\imatest\gui\plot2svg.m =========="""
 
-        linter_reports = mlint_handle.parse_mlint_output(stdout=mlint_message, file_list=file_list)
+        linter_reports = mlint_handle.parse_mlint_output(stderr=mlint_message, file_list=file_list)
 
         assert len(linter_reports) == 2
         assert all(not r.has_records() for r in linter_reports)
@@ -202,7 +202,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         L 1580 (C 11-17): DSTRVCT: 'strvcat' is not recommended. With appropriate code changes, use 'char' instead.
         L 1783 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."""
 
-        linter_reports = mlint_handle.parse_mlint_output(stdout=mlint_message, file_list=file_list)
+        linter_reports = mlint_handle.parse_mlint_output(stderr=mlint_message, file_list=file_list)
 
         assert len(linter_reports) == 2
         assert all(r.has_records() for r in linter_reports)

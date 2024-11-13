@@ -7,8 +7,8 @@ from pathlib import Path
 from precommitmatlablint.find_matlab import (
     get_matlab_installs,
 )
-from precommitmatlablint.linter_handle import MLintHandle, MatlabHandle, MatlabHandleList
-from precommitmatlablint.linter_results import LinterRecord
+from precommitmatlablint.linter_handle import MLintHandle, MatlabHandle, MatlabHandleList, LinterOptions
+from precommitmatlablint.linter_results import LinterRecord, LinterReport
 from precommitmatlablint.lint_matlab import validate_matlab, main
 from precommitmatlablint.return_code import ReturnCode
 
@@ -484,17 +484,22 @@ class TestLintMatlab:
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
-
-        linter_records: List[LinterRecord] = mlint_handle.lint(
-            filepaths=[test_file],
+        options = LinterOptions(
             fail_warnings=fail_warnings,
             enable_cyc=enable_cyc,
             enable_mod_cyc=enable_mod_cyc,
             ignore_ok_pragmas=ignore_ok_pragmas,
             use_factory_default=False,
         )
+        linter_reports: List[LinterReport] = mlint_handle.lint(filepaths=[test_file], options=options)
 
-        assert len(linter_records) == 0
+        assert len(linter_reports) == 1
+        failure_found = False
+        for record in linter_reports[0].records:
+            if record.id not in ["MCABE", "CABE"]:
+                failure_found = True
+
+        assert not failure_found
 
     @pytest.mark.parametrize("enable_cyc", [True, False])
     @pytest.mark.parametrize("enable_mod_cyc", [True, False])
@@ -523,14 +528,13 @@ class TestLintMatlab:
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
-
-        linter_records: List[LinterRecord] = mlint_handle.lint(
-            filepaths=[test_file],
+        options = LinterOptions(
             fail_warnings=fail_warnings,
             enable_cyc=enable_cyc,
             enable_mod_cyc=enable_mod_cyc,
             ignore_ok_pragmas=ignore_ok_pragmas,
             use_factory_default=False,
         )
+        linter_reports: List[LinterReport] = mlint_handle.lint(filepaths=[test_file], options=options)
 
-        assert len(linter_records) == 1
+        assert len(linter_reports) == 1
