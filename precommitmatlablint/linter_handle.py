@@ -59,10 +59,10 @@ class MLintHandle(Linter):
         return linter_reports
 
     @classmethod
-    def parse_mlint_output(cls, stdout: str, file_list: List[Path]) -> List[LinterReport]:
+    def parse_mlint_output(cls, stderr: str, file_list: List[Path]) -> List[LinterReport]:
         linter_reports: List[LinterReport] = []
-        if len(stdout) > 0:
-            lines: List[str] = stdout.splitlines()
+        if len(stderr) > 0:
+            lines: List[str] = stderr.splitlines()
             lines = [line.strip() for line in lines]
 
             if len(file_list) == 1:
@@ -88,6 +88,10 @@ class MLintHandle(Linter):
                             this_report.records.append(LinterRecord.from_mlint(mlint_message=lines[line_index]))
 
                     linter_reports.append(this_report)
+        else:
+            for file in file_list:
+                this_report = LinterReport(source_file=file)
+                linter_reports.append(this_report)
 
         return linter_reports
 

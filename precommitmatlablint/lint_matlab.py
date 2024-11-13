@@ -18,10 +18,12 @@ def extract_file_path_option(file_path_string: str) -> Optional[Path]:
     potential_file = Path(file_path_string).absolute()
     return potential_file if is_existent_file(potential_file) else None
 
+
 def extract_folder_path_option(path_string: str) -> Optional[Path]:
     """Return a folder Path from a supplied string, or None if the supplied string does not map to an existing folder."""
     potential_folder = Path(path_string).absolute()
     return potential_folder if potential_folder.exists() and potential_folder.is_dir() else None
+
 
 def validate_matlab(
     matlab_handle: MatlabHandle,
@@ -74,7 +76,6 @@ def validate_matlab(
     )
     if m_lint_handle and m_lint_handle.is_valid():
         linter_reports = m_lint_handle.lint(filepaths=filepaths, options=options)
-
     else:
         linter_reports = matlab_handle.lint(filepaths=filepaths, options=options)
 
@@ -82,9 +83,9 @@ def validate_matlab(
         print(f"mlint found issues:")
         for report in linter_reports:
             print(report.source_file)
-            if len(report.records) > 0:
-                return_code = ReturnCode.FAIL
             for record in report.records:
+                if return_code == ReturnCode.OK and record.id not in ["CABE", "MCABE"]:
+                    return_code = ReturnCode.FAIL
                 print(record)
 
     logger.info(f"MATLAB lint result: {return_code}")
