@@ -114,7 +114,7 @@ class MLintHandle(Linter):
         elif options.checkcode_config_file:
             arguments.append(f"-config={str(options.checkcode_config_file)}")
 
-        arguments = arguments + filepaths
+        arguments = arguments + [str(f) for f in filepaths]
 
         return arguments
 
@@ -126,7 +126,6 @@ class MatlabHandle(Linter):
     home_path: Path
     exe_path: Path
     base_exe_path: Path
-    checksum: str = ""
     version: str = ""
     release: str = ""
 
@@ -142,8 +141,6 @@ class MatlabHandle(Linter):
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
             self.version, self.release, _ = self.query_version()
-
-        self.checksum = self.compute_checksum()
 
     def get_version_info_file(self) -> Path:
         return self.home_path / "VersionInfo.xml"
@@ -171,7 +168,7 @@ class MatlabHandle(Linter):
         )
 
     def is_initialized(self) -> bool:
-        return self.is_valid() and len(self.version) > 0 and len(self.release) > 0 and len(self.checksum) > 0
+        return self.is_valid() and len(self.version) > 0 and len(self.release) > 0
 
     def is_valid(self) -> bool:
         return self.exe_path.exists() and self.exe_path.is_file()
@@ -334,24 +331,6 @@ class MatlabHandle(Linter):
             release = match.group("release")
         return release, version
 
-    def compute_checksum(self) -> str:
-        """Compute the sha256 hash of the MATLAB executable.
-        Returns
-        -------
-        str
-            The sha256 hash, if the executable exists, an empty string otherwise
-        """
-
-        hasher = hashlib.sha256()
-        checksum: str = ""
-        if self.is_valid():
-            with self.exe_path.open("rb") as f:
-                for page in iter(lambda: f.read(4096), b""):
-                    hasher.update(page)
-
-            checksum = hasher.hexdigest()
-        return checksum
-
     def to_dict(self) -> Dict[str, str]:
         output: Dict[str, str] = asdict(self)
         for _, (key, value) in enumerate(output.items()):
@@ -361,7 +340,6 @@ class MatlabHandle(Linter):
 
     def refresh(self) -> None:
         if self.is_valid():
-            self.checksum: str = self.compute_checksum()
             version_info_file: Path = self.get_version_info_file()
             if version_info_file.exists():
                 self.version, self.release = MatlabHandle.read_version_info(self.get_version_info_file())
@@ -407,7 +385,6 @@ class MatlabHandle(Linter):
         exe_path = Path(input_dict.get("exe_path", "")).absolute()
         base_exe_path = Path(input_dict.get("base_exe_path", "")).absolute()
         version = input_dict.get("version", "")
-        checksum = input_dict.get("checksum", "")
         release = input_dict.get("release", "")
 
         return MatlabHandle(
@@ -415,7 +392,6 @@ class MatlabHandle(Linter):
             exe_path=exe_path,
             base_exe_path=base_exe_path,
             version=version,
-            checksum=checksum,
             release=release,
         )
 

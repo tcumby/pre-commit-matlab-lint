@@ -102,19 +102,13 @@ def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
     -------
     ReturnCode
     """
-    return_code: ReturnCode = ReturnCode.OK
-
     # Let's not fail if any of the linter McCabe cyclomaticity IDs are present.
-    allowed_ids = ["CABE", "MCABE"]
-    return_codes: List[ReturnCode] = []
-    if len(linter_results) > 0:
-        for result in linter_results:
-            this_return_code = ReturnCode.FAIL if result["id"] not in allowed_ids else ReturnCode.OK
-            return_codes.append(this_return_code)
+    allowed_ids = {"CABE", "MCABE"}
+    for result in linter_results:
+        if result["id"] not in allowed_ids:
+            return ReturnCode.FAIL
 
-        return_code = ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
-
-    return return_code
+    return ReturnCode.OK
 
 
 def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
