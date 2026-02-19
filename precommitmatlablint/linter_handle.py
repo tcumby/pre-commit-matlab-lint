@@ -453,9 +453,14 @@ class MatlabHandleList:
 
                 self.has_changes = False
 
-    def update(self, search_list: List[Path]) -> None:
+    def update(self, search_list: "List[Path] | MatlabHandleList") -> None:
         """Add handles to new MATLAB installs"""
-        for home_path in search_list:
+        if isinstance(search_list, MatlabHandleList):
+            search_list_paths: List[Path] = [h.home_path for h in search_list.handles]
+        else:
+            search_list_paths = search_list
+
+        for home_path in search_list_paths:
             if self.find_home_path(home_path) is None:
                 self._logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)

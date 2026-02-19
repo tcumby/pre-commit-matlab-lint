@@ -34,10 +34,7 @@ class TestMLintHandle:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -70,10 +67,7 @@ class TestMLintHandle:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -105,10 +99,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -130,10 +121,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()

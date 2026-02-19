@@ -33,13 +33,13 @@ def get_matlab_root(platform: str) -> Path:
     return root_paths[platform]
 
 
-def get_matlab_installs() -> List[Path]:
+def get_matlab_installs() -> MatlabHandleList:
     """Return a list of all MATLAB home folder paths based on matching the release name pattern in the folder name.
 
     Returns
     -------
-    List of Path
-                 A list of all discovered MATLAB home paths
+    MatlabHandleList
+                 A list of all discovered MATLAB handles
     """
     this_platform = sys.platform
     matlab_home_paths: List[Path] = []
@@ -57,7 +57,9 @@ def get_matlab_installs() -> List[Path]:
             matlab_home_paths = [d for d in root_path.iterdir() if d.is_dir() and re.match(r"R\d+\w", d.stem)]
             matlab_home_paths = sorted(matlab_home_paths, reverse=True)
 
-    return matlab_home_paths
+    handle_list = MatlabHandleList()
+    handle_list.update(matlab_home_paths)
+    return handle_list
 
 
 def get_matlab_registry_installs() -> List[Path]:
@@ -161,7 +163,9 @@ def find_matlab(
     if len(handle_list) == 0:
         # If we haven't previously cached any installs, go find all that are present on the system
         logger.info("No prior MATLAB installs have been cached.")
-        handle_list.update(get_matlab_installs())
+        installs = get_matlab_installs()
+        handle_list.handles.extend(installs.handles)
+        handle_list.has_changes = True
 
     handle: Optional[MatlabHandle] = None
     if matlab_home_path is not None:
