@@ -162,7 +162,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
-    parser.add_argument("--ignore-ok-pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas")
+    parser.add_argument("--ignore-ok-pragmas", action="store_true", help="Ignore 'ok' checkcode suppression pragmas")
     parser.add_argument(
         "--checkcode-config-file",
         action="store",
