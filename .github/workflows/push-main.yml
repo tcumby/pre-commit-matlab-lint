@@ -27,9 +27,12 @@ jobs:
       - name: Install build meta-dependencies
         run: |
           pip install uv tox
+      - name: compute env name
+        run: |
+          python -c "print('${{ matrix.python-version }}'.replace('.', ''))"
       - name: Test with tox
         run: |
-          tox -e py${{ join(split(matrix.python-version, '.'), '') }}
+          tox -e py${{ steps.compute-env-name.outputs.stdout }}
       - name: Build the Docker image
         run: |
           docker build .
