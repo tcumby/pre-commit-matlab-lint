@@ -25,4 +25,5 @@ jobs:
           pip install tox uv
       - name: Test with tox
         run: |
-          tox -v
+             tox -v -e py${{ replace(matrix.python-version, '.', '') }}
+
