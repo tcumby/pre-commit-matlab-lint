@@ -8,24 +8,24 @@ on:
     types: [release-made]
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Install build meta-dependencies
         run: |
-          pip install poetry tox
+          pip install uv tox
       - name: Test with tox
         run: |
           tox -v
-      - name: Build sdists and wheels with Poetry
+      - name: Build sdists and wheels with uv
         run: |
-          poetry build
-          poetry install
+          uv build
+          uv pip install
       - name: Build the Docker image
         run: |
           docker build .
@@ -37,4 +37,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to PyPi
         run: |
-          poetry publish -vv --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+          uv publish --verbose --username __token__ --password ${{ secrets.PYPI_TOKEN }}
