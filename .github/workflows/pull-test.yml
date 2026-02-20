@@ -26,7 +26,7 @@ jobs:
       - name: compute env name
         id: compute-env-name
         run: |
-          python -c "print('${{ matrix.python-version }}'.replace('.', ''))"
+          python -c "print('${{ matrix.python-version }}'.replace('.', ''))" >> $GITHUB_OUTPUT
       - name: Test with tox
         run: |
           tox -v -e py${{ steps.compute-env-name.outputs.stdout }}
