@@ -24,6 +24,7 @@ jobs:
         run: |
           pip install tox uv
       - name: compute env name
+        id: compute-env-name
         run: |
           python -c "print('${{ matrix.python-version }}'.replace('.', ''))"
       - name: Test with tox
