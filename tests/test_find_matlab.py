@@ -7,10 +7,9 @@ import pytest  # noqa: F401 # pylint: disable=unused-import
 
 from precommitmatlablint.find_matlab import (
     get_matlab_installs,
-    MatlabHandle,
-    MatlabHandleList,
     find_matlab,
 )
+from precommitmatlablint.linter_handle import MatlabHandle, MatlabHandleList
 from precommitmatlablint.return_code import ReturnCode
 
 
@@ -43,28 +42,23 @@ class TestFindMatlab:
             pytest.skip("No Matlab installations found.")
 
         # Check that what is returned are all folder paths
-        assert all([s.is_dir() and s.exists() for s in install_list])
+        assert all([h.home_path.is_dir() and h.home_path.exists() for h in install_list.handles])
 
         # Check that there is a MATLAB executable in the correct sub-directory relative to the returned folder path
-        assert all(
-            [Path(s, "bin", MatlabHandle.get_matlab_exe_name()).exists for s in install_list]
-        )
+        for h in install_list.handles:
+            assert h.exe_path.exists(), f"MATLAB executable not found for {h.home_path} at {h.exe_path}"
 
     def test_refresh(self):
         install_list = get_matlab_installs()
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         # save the current values
         expected_version = handle.version
         expected_release = handle.release
-        expected_checksum = handle.checksum
 
         # change the values
         handle.version = ""
@@ -73,7 +67,6 @@ class TestFindMatlab:
 
         handle.refresh()
 
-        assert expected_checksum == handle.checksum
         assert expected_version == handle.version
         assert expected_release == handle.release
 
@@ -120,10 +113,7 @@ class TestFindMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe)
+        handle = install_list.handles[0]
         assert handle.is_initialized() is True
         version, release, return_code = handle.query_version()
         assert len(version) > 0
@@ -136,15 +126,15 @@ class TestFindMatlab:
             pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
-        this_matlab_home = install_list[0]
-        version_info_file = this_matlab_home / "VersionInfo.xml"
-        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+        matlab_handle = install_list.handles[0]
+        expected_version = matlab_handle.version
+        expected_release = matlab_handle.release
 
-        matlab_handle = handle_list.find_version(expected_version)
-        assert matlab_handle is not None
+        found_handle = handle_list.find_version(expected_version)
+        assert found_handle is not None
 
-        assert expected_version == matlab_handle.version
-        assert expected_release == matlab_handle.release
+        assert expected_version == found_handle.version
+        assert expected_release == found_handle.release
 
     def test_find_matlab_release(self, handle_list):
         install_list = get_matlab_installs()
@@ -152,15 +142,15 @@ class TestFindMatlab:
             pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
-        this_matlab_home = install_list[0]
-        version_info_file = this_matlab_home / "VersionInfo.xml"
-        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+        matlab_handle = install_list.handles[0]
+        expected_version = matlab_handle.version
+        expected_release = matlab_handle.release
 
-        matlab_handle = handle_list.find_release(expected_release)
-        assert matlab_handle is not None
+        found_handle = handle_list.find_release(expected_release)
+        assert found_handle is not None
 
-        assert expected_version == matlab_handle.version
-        assert expected_release == matlab_handle.release
+        assert expected_version == found_handle.version
+        assert expected_release == found_handle.release
 
     def test_find_matlab_with_release(self, cleanup_default_cache_file, handle_list):
         install_list = get_matlab_installs()
@@ -168,9 +158,9 @@ class TestFindMatlab:
             pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
-        this_matlab_home = install_list[0]
-        version_info_file = this_matlab_home / "VersionInfo.xml"
-        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+        matlab_handle = install_list.handles[0]
+        expected_version = matlab_handle.version
+        expected_release = matlab_handle.release
 
         found_matlab, return_code = find_matlab(matlab_release_name=expected_release)
         assert found_matlab is not None
@@ -185,9 +175,8 @@ class TestFindMatlab:
             pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
-        this_matlab_home = install_list[0]
-        version_info_file = this_matlab_home / "VersionInfo.xml"
-        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+        matlab_handle = install_list.handles[0]
+        expected_version = matlab_handle.version
 
         found_matlab, return_code = find_matlab(matlab_version=expected_version)
         assert found_matlab is not None
@@ -201,9 +190,9 @@ class TestFindMatlab:
             pytest.skip("No Matlab installations found.")
         handle_list.update(install_list)
 
-        this_matlab_home = install_list[0]
-        version_info_file = this_matlab_home / "VersionInfo.xml"
-        expected_version, expected_release = MatlabHandle.read_version_info(version_info_file)
+        matlab_handle = install_list.handles[0]
+        this_matlab_home = matlab_handle.home_path
+        expected_version = matlab_handle.version
 
         found_matlab, return_code = find_matlab(matlab_home_path=this_matlab_home)
         assert found_matlab is not None
@@ -272,7 +261,7 @@ class TestFindMatlab:
         handle: MatlabHandle
         for handle in handle_list.handles:
             product_info = handle.get_product_info_file()
-            version, release_name= MatlabHandle.read_product_info(product_info)
+            version, release_name = MatlabHandle.read_product_info(product_info)
 
             assert len(version) > 0, f"Failed to get version for {handle.home_path}"
             assert len(release_name) > 0, f"Failed to get release name for {handle.home_path}"

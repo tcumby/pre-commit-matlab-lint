@@ -1,10 +1,10 @@
 import argparse
-import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-from precommitmatlablint.find_matlab import find_matlab, MatlabHandle
+from precommitmatlablint.find_matlab import find_matlab
+from precommitmatlablint.linter_handle import LinterOptions, MatlabHandle
 from precommitmatlablint.return_code import ReturnCode
 
 
@@ -19,61 +19,10 @@ def extract_file_path_option(file_path_string: str) -> Optional[Path]:
     return potential_file if is_existent_file(potential_file) else None
 
 
-def construct_matlab_script(
-    filepaths: List[Path],
-    fail_warnings: bool,
-    enable_cyc: bool,
-    enable_mod_cyc: bool,
-    ignore_ok_pragmas: bool,
-    use_factory_default: bool,
-    checkcode_config_file: Optional[Path] = None,
-) -> str:
-    """Return the inline MATLAB script to run on the MATLAB instance.
-
-    Parameters
-    ----------
-
-    use_factory_default
-    filepaths: list of Path
-                            List of all filepaths to validate through MATLAB's checkcode function
-    fail_warnings: bool
-                            Whether to treat warnings as errors
-    enable_mod_cyc: bool
-                            Enable display of modified cyclomaticity complexity calculations for each file.
-    enable_cyc: bool
-                            Enable display of McCabe cyclomaticity camplexity calculations for each file.
-    ignore_ok_pragmas: bool
-                            Ignore %#ok checkcode suppression pragmas
-    use_factory_default: bool
-                            Ignore any checkcode config files and use factory defaults
-    checkcode_config_file: Path, optional
-                            An absolute path to a checkcode config file
-    Returns
-    -------
-    str
-        The MATLAB script to run on the MATLAB instance
-    """
-    file_list = [f"'{str(f)}'" for f in filepaths]
-
-    level_option = "'-m0'" if fail_warnings else "'-m2'"
-    command: List = [level_option, "'-id'", "'-struct'"]
-    if enable_cyc:
-        command.append("'-cyc'")
-
-    if enable_mod_cyc:
-        command.append("'-modcyc'")
-
-    if ignore_ok_pragmas:
-        command.append("'-notok'")
-
-    if use_factory_default:
-        command.append("'-config=factory'")
-    elif checkcode_config_file:
-        command.append(f"'-config={str(checkcode_config_file)}'")
-
-    command = command + file_list
-    command_string: str = ", ".join(command)
-    return f"clc;disp(jsonencode(checkcode({command_string})));quit;"
+def extract_folder_path_option(path_string: str) -> Optional[Path]:
+    """Return a folder Path from a supplied string, or None if the supplied string does not map to an existing folder."""
+    potential_folder = Path(path_string).absolute()
+    return potential_folder if potential_folder.exists() and potential_folder.is_dir() else None
 
 
 def validate_matlab(
@@ -115,65 +64,29 @@ def validate_matlab(
     """
     if logger is None:
         logger = logging.getLogger(__name__)
-
-    matlab_script: str = construct_matlab_script(
-        filepaths,
-        fail_warnings,
-        enable_cyc,
-        enable_mod_cyc,
-        ignore_ok_pragmas,
-        use_factory_default,
-        checkcode_config_file,
+    return_code = ReturnCode.OK
+    m_lint_handle = matlab_handle.get_mlint_handle()
+    options = LinterOptions(
+        fail_warnings=fail_warnings,
+        enable_cyc=enable_cyc,
+        enable_mod_cyc=enable_mod_cyc,
+        ignore_ok_pragmas=ignore_ok_pragmas,
+        use_factory_default=use_factory_default,
+        checkcode_config_file=checkcode_config_file,
     )
+    if m_lint_handle and m_lint_handle.is_valid():
+        linter_reports = m_lint_handle.lint(filepaths=filepaths, options=options)
+    else:
+        linter_reports = matlab_handle.lint(filepaths=filepaths, options=options)
 
-    print(f"Validating MATLAB files using {str(matlab_handle.exe_path)}")
-    stdout, return_code = matlab_handle.run(matlab_script)
-    logger.debug(f"MATLAB stdout: {stdout}")
-    logger.debug(f"MATLAB return code: {return_code}")
-    try:
-        if len(filepaths) == 1:
-            this_file = filepaths[0]
-
-            if len(stdout) > 0:
-                logger.info("MATLAB returned linter warnings and/or errors.")
-                linter_results: List[Dict[str, Any]] = json.loads(stdout)
-                if isinstance(linter_results, dict):
-                    linter_results = [linter_results]
-
-                return_code = inspect_linter_result(linter_results)
-                print_linter_result(this_file, linter_results)
-            else:
-                # If there is no stdout from MATLAB, then there were no errors
-                logger.info("No results were returned from MATLAB")
-                return_code = ReturnCode.OK
-
-        elif len(filepaths) > 1:
-            if len(stdout) > 0:
-                logger.info("MATLAB returned linter warnings and/or errors.")
-                linter_results_list: List[List[Dict[str, Any]]] = json.loads(stdout)
-                return_codes: List[ReturnCode] = []
-                for index, this_file in enumerate(filepaths):
-                    this_linter_results = linter_results_list[index]
-                    if isinstance(this_linter_results, dict):
-                        this_linter_results = [this_linter_results]
-
-                    return_code = inspect_linter_result(this_linter_results)
-                    return_codes.append(return_code)
-                    print_linter_result(this_file, this_linter_results)
-
-                return_code = (
-                    ReturnCode.FAIL
-                    if any([r == ReturnCode.FAIL for r in return_codes])
-                    else ReturnCode.OK
-                )
-            else:
-                # If there is no stdout from MATLAB, then there were no errors
-                logger.info("No results were returned from MATLAB")
-                return_code = ReturnCode.OK
-
-    except json.JSONDecodeError as err:
-        return_code = ReturnCode.FAIL
-        logger.error(f"Unable to parse the JSON returned by MATLAB: {str(err)}")
+    if len(linter_reports) > 0:
+        print("mlint found issues:")
+        for report in linter_reports:
+            print(report.source_file)
+            for record in report.records:
+                if return_code == ReturnCode.OK and record.id not in ["CABE", "MCABE"]:
+                    return_code = ReturnCode.FAIL
+                print(record)
 
     logger.info(f"MATLAB lint result: {return_code}")
     return return_code
@@ -189,21 +102,13 @@ def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
     -------
     ReturnCode
     """
-    return_code: ReturnCode = ReturnCode.OK
-
     # Let's not fail if any of the linter McCabe cyclomaticity IDs are present.
-    allowed_ids = ["CABE", "MCABE"]
-    return_codes: List[ReturnCode] = []
-    if len(linter_results) > 0:
-        for result in linter_results:
-            this_return_code = ReturnCode.FAIL if result["id"] not in allowed_ids else ReturnCode.OK
-            return_codes.append(this_return_code)
+    allowed_ids = {"CABE", "MCABE"}
+    for result in linter_results:
+        if result["id"] not in allowed_ids:
+            return ReturnCode.FAIL
 
-        return_code = (
-            ReturnCode.FAIL if any([r == ReturnCode.FAIL for r in return_codes]) else ReturnCode.OK
-        )
-
-    return return_code
+    return ReturnCode.OK
 
 
 def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
@@ -218,7 +123,6 @@ def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-
     logger = logging.getLogger(__name__)
 
     """Parse commandline arguments and validate the supplied files through MATLAB's checkcode function."""
@@ -246,9 +150,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default=None,
         help="The release name of MATLAB to use.",
     )
-    parser.add_argument(
-        "--treat-warning-as-error", action="store_true", help="Treat all warnings as errors"
-    )
+    parser.add_argument("--treat-warning-as-error", action="store_true", help="Treat all warnings as errors")
 
     parser.add_argument(
         "--enable-modified-cyclomaticity",
@@ -260,9 +162,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
-    parser.add_argument(
-        "--ignore-ok-pragmas", action="store_true", help="Ignore %#ok checkcode suppression pragmas"
-    )
+    parser.add_argument("--ignore-ok-pragmas", action="store_true", help="Ignore 'ok' checkcode suppression pragmas")
     parser.add_argument(
         "--checkcode-config-file",
         action="store",
@@ -299,7 +199,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     else:
         logger.info("No files were supplied.")
 
-    matlab_home_path: Optional[Path] = extract_file_path_option(args.matlab_home_path)
+    matlab_home_path: Optional[Path] = extract_folder_path_option(args.matlab_home_path)
 
     matlab_version: Optional[str] = args.matlab_version
 

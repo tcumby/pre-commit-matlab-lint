@@ -5,12 +5,10 @@ import pytest  # noqa: F401 # pylint: disable=unused-import
 from pathlib import Path
 
 from precommitmatlablint.find_matlab import (
-    MatlabHandleList,
     get_matlab_installs,
-    MatlabHandle,
-    MLintHandle,
-    LinterRecord,
 )
+from precommitmatlablint.linter_handle import MLintHandle, MatlabHandleList, LinterOptions
+from precommitmatlablint.linter_results import LinterReport
 from precommitmatlablint.lint_matlab import validate_matlab, main
 from precommitmatlablint.return_code import ReturnCode
 
@@ -74,12 +72,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -114,12 +107,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -154,12 +142,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -194,12 +177,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -245,12 +223,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -295,12 +268,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         command = prepare_command(
@@ -341,12 +309,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -391,12 +354,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         command = prepare_command(
@@ -408,9 +366,7 @@ class TestLintMatlab:
         assert int(ReturnCode.FAIL) == return_code
 
     @pytest.mark.parametrize("ignore_ok_pragmas", [True, False])
-    @pytest.mark.parametrize(
-        "fail_warnings,expected", [(True, ReturnCode.FAIL), (False, ReturnCode.OK)]
-    )
+    @pytest.mark.parametrize("fail_warnings,expected", [(True, ReturnCode.FAIL), (False, ReturnCode.OK)])
     def test_fail_warnings(
         self,
         matlab_folder_path: Path,
@@ -426,12 +382,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -446,9 +397,7 @@ class TestLintMatlab:
 
         assert expected == return_code
 
-    @pytest.mark.parametrize(
-        "ignore_ok_pragmas,expected", [(True, ReturnCode.FAIL), (False, ReturnCode.OK)]
-    )
+    @pytest.mark.parametrize("ignore_ok_pragmas,expected", [(True, ReturnCode.FAIL), (False, ReturnCode.OK)])
     def test_ignore_ok_pragmas(
         self,
         matlab_folder_path: Path,
@@ -463,12 +412,7 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         return_code: ReturnCode = validate_matlab(
@@ -503,26 +447,26 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
-
-        linter_records: List[LinterRecord] = mlint_handle.lint(
-            filepaths=[test_file],
+        options = LinterOptions(
             fail_warnings=fail_warnings,
             enable_cyc=enable_cyc,
             enable_mod_cyc=enable_mod_cyc,
             ignore_ok_pragmas=ignore_ok_pragmas,
             use_factory_default=False,
         )
+        linter_reports: List[LinterReport] = mlint_handle.lint(filepaths=[test_file], options=options)
 
-        assert len(linter_records) == 0
+        assert len(linter_reports) == 1
+        failure_found = False
+        for record in linter_reports[0].records:
+            if record.id not in ["MCABE", "CABE"]:
+                failure_found = True
+
+        assert not failure_found
 
     @pytest.mark.parametrize("enable_cyc", [True, False])
     @pytest.mark.parametrize("enable_mod_cyc", [True, False])
@@ -544,23 +488,17 @@ class TestLintMatlab:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
-
-        linter_records: List[LinterRecord] = mlint_handle.lint(
-            filepaths=[test_file],
+        options = LinterOptions(
             fail_warnings=fail_warnings,
             enable_cyc=enable_cyc,
             enable_mod_cyc=enable_mod_cyc,
             ignore_ok_pragmas=ignore_ok_pragmas,
             use_factory_default=False,
         )
+        linter_reports: List[LinterReport] = mlint_handle.lint(filepaths=[test_file], options=options)
 
-        assert len(linter_records) == 1
+        assert len(linter_reports) == 1

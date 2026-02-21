@@ -5,13 +5,10 @@ import pytest  # noqa: F401 # pylint: disable=unused-import
 from pathlib import Path, PureWindowsPath
 
 from precommitmatlablint.find_matlab import (
-    MatlabHandleList,
     get_matlab_installs,
-    MatlabHandle,
-    MLintHandle,
-    LinterRecord,
-    LinterReport,
 )
+from precommitmatlablint.linter_handle import MLintHandle, MatlabHandleList
+from precommitmatlablint.linter_results import LinterRecord, LinterReport
 
 
 @pytest.fixture(scope="module")
@@ -37,12 +34,7 @@ class TestMLintHandle:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -50,7 +42,7 @@ class TestMLintHandle:
         mlint_message = "L 6402 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."
 
         linter_reports: List[LinterReport] = mlint_handle.parse_mlint_output(
-            stdout=mlint_message, file_list=[test_file]
+            stderr=mlint_message, file_list=[test_file]
         )
 
         assert len(linter_reports) == 1
@@ -75,12 +67,7 @@ class TestMLintHandle:
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -90,7 +77,7 @@ L 3696 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
 L 3757 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead.
 L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."""
         linter_reports: List[LinterReport] = mlint_handle.parse_mlint_output(
-            stdout=mlint_message, file_list=[test_file]
+            stderr=mlint_message, file_list=[test_file]
         )
         assert len(linter_reports) == 1
         linter_records: List[LinterRecord] = linter_reports[0].records
@@ -112,12 +99,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -129,7 +111,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         mlint_message = r"""========== F:\working_copies\imatest\gui\imatest.m ==========
 ========== F:\working_copies\imatest\gui\plot2svg.m =========="""
 
-        linter_reports = mlint_handle.parse_mlint_output(stdout=mlint_message, file_list=file_list)
+        linter_reports = mlint_handle.parse_mlint_output(stderr=mlint_message, file_list=file_list)
 
         assert len(linter_reports) == 2
         assert all(not r.has_records() for r in linter_reports)
@@ -139,12 +121,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         if len(install_list) == 0:
             pytest.skip("No Matlab installations found.")
 
-        this_matlab_home = install_list[0]
-        matlab_exe: Path = MatlabHandle.construct_exe_path(this_matlab_home)
-        base_matlab_exe: Path = MatlabHandle.construct_base_exe_path(this_matlab_home)
-        handle = MatlabHandle(
-            home_path=this_matlab_home, exe_path=matlab_exe, base_exe_path=base_matlab_exe
-        )
+        handle = install_list.handles[0]
         assert handle.is_initialized()
 
         mlint_handle: MLintHandle = handle.get_mlint_handle()
@@ -213,7 +190,7 @@ L 3924 (C 1-6): GVMIS: Global variables are inefficient and make errors difficul
         L 1580 (C 11-17): DSTRVCT: 'strvcat' is not recommended. With appropriate code changes, use 'char' instead.
         L 1783 (C 1-6): GVMIS: Global variables are inefficient and make errors difficult to diagnose. Use a function with input variables instead."""
 
-        linter_reports = mlint_handle.parse_mlint_output(stdout=mlint_message, file_list=file_list)
+        linter_reports = mlint_handle.parse_mlint_output(stderr=mlint_message, file_list=file_list)
 
         assert len(linter_reports) == 2
         assert all(r.has_records() for r in linter_reports)

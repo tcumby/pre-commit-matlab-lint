@@ -48,4 +48,4 @@ Licensed under the terms of the [MIT License](https://spdx.org/licenses/MIT.html
 [New issues](https://github.com/tcumby/pre-commit-matlab-lint/issues) and pull requests are welcome.
 Please refer to the [contributing guide](https://github.com/tcumby/pre-commit-matlab-lint/blob/main/CONTRIBUTING.md)
 and [security policy](https://github.com/tcumby/pre-commit-matlab-lint/blob/main/SECURITY.md).
-Generated with [Tyrannosaurus](https://github.com/dmyersturnbull/tyrannosaurus).
+Generated with [Tyrannosaurus](https://github.com/dmyersturnbull/tyrannosaurus) and converted to use [uv](https://github.com/astral-sh/uv).

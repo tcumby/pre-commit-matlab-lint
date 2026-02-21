@@ -10,9 +10,12 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ubuntu-20.04]
-        python-version: ["3.9"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: "${{ matrix.os }}"
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,7 +25,13 @@ jobs:
           python-version: "${{ matrix.python-version }}"
       - name: Install build meta-dependencies
         run: |
-          pip install tox poetry
+          pip install tox uv
+      - name: compute env name
+        id: compute-env-name
+        run: |
+          name=$(python -c "print('${{ matrix.python-version }}'.replace('.', ''))")
+          echo "name=${name}" >> $GITHUB_OUTPUT
       - name: Test with tox
         run: |
-          tox -v
+          tox -v -e py${{ steps.compute-env-name.outputs.name }}
+

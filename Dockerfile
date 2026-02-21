@@ -28,24 +28,21 @@ ENV PYTHONHASHSEED=random
 ENV PIP_NO_CACHE_DIR=off
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PIP_DEFAULT_TIMEOUT=120
-ENV POETRY_VERSION=1.1.4
-
-# Install system deps
-RUN pip install "poetry==$POETRY_VERSION"
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /code
-COPY poetry.lock pyproject.toml /code/
+COPY uv.lock pyproject.toml /code/
 
-# Install with poetry
-# pip install would probably work, too, but we'd have to make sure it's a recent enough pip
-# Don't bother creating a virtual env -- significant performance increase
-RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi
+# Install with uv
+RUN uv sync --frozen --no-dev
 
 # Copy everything (code) to our workdir
-# Our .dockerignore file should be good enough that we don't have extra stuff
 COPY . /code
+
+# Install the project
+RUN uv pip install .
 
 
 # --------------------------------------
