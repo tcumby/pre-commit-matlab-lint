@@ -30,10 +30,11 @@ jobs:
       - name: compute env name
         id: compute-env-name
         run: |
-          python -c "print('${{ matrix.python-version }}'.replace('.', ''))" >> $GITHUB_OUTPUT
+          name=$(python -c "print('${{ matrix.python-version }}'.replace('.', ''))")
+          echo "name=${name}" >> $GITHUB_OUTPUT
       - name: Test with tox
         run: |
-          tox -e py${{ steps.compute-env-name.outputs.stdout }}
+          tox -v -e py${{ steps.compute-env-name.outputs.name }}
       - name: Build the Docker image
         run: |
           docker build .
