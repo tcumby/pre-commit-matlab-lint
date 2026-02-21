@@ -7,7 +7,7 @@ from pathlib import Path, PureWindowsPath
 from precommitmatlablint.find_matlab import (
     get_matlab_installs,
 )
-from precommitmatlablint.linter_handle import MLintHandle, MatlabHandle, MatlabHandleList
+from precommitmatlablint.linter_handle import MLintHandle, MatlabHandleList
 from precommitmatlablint.linter_results import LinterRecord, LinterReport
 
 

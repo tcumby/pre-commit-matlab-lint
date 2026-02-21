@@ -54,9 +54,7 @@ dev = [
     "bandit>=1.7",
     "coverage[toml]>=7.3",
     "defusedxml>=0.7",
-    "flake8>=5.0",
-    "flake8-bugbear>=21",
-    "flake8-docstrings>=1.7",
+    "ruff>=0.1",
     "pre-commit>=2.16",
     "pre-commit-hooks>=4.1",
     "pytest>=7.4",
@@ -106,6 +104,23 @@ strict_optional = true
 
 [tool.bandit]
 skips = ["B404", "B603"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90"]
+ignore = [
+    "E203", "E225", "E301", "E302", "E501",
+    "W391", "W293"
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.pycodestyle]
 max-line-length = 100

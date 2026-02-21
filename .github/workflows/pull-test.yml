@@ -25,7 +25,7 @@ jobs:
           python-version: "${{ matrix.python-version }}"
       - name: Install build meta-dependencies
         run: |
-          pip install tox uv
+          pip install tox uv types-PyYAML types-defusedxml
       - name: compute env name
         id: compute-env-name
         run: |

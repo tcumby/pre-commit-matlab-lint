@@ -80,7 +80,7 @@ def validate_matlab(
         linter_reports = matlab_handle.lint(filepaths=filepaths, options=options)
 
     if len(linter_reports) > 0:
-        print(f"mlint found issues:")
+        print("mlint found issues:")
         for report in linter_reports:
             print(report.source_file)
             for record in report.records:

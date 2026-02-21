@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import defusedxml.ElementTree as ElementTree  # type: ignore[import-untyped]
 
 from precommitmatlablint.linter_handle import MatlabHandle, MatlabHandleList
 from precommitmatlablint.return_code import ReturnCode

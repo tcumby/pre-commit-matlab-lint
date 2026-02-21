@@ -7,8 +7,8 @@ from pathlib import Path
 from precommitmatlablint.find_matlab import (
     get_matlab_installs,
 )
-from precommitmatlablint.linter_handle import MLintHandle, MatlabHandle, MatlabHandleList, LinterOptions
-from precommitmatlablint.linter_results import LinterRecord, LinterReport
+from precommitmatlablint.linter_handle import MLintHandle, MatlabHandleList, LinterOptions
+from precommitmatlablint.linter_results import LinterReport
 from precommitmatlablint.lint_matlab import validate_matlab, main
 from precommitmatlablint.return_code import ReturnCode
 
