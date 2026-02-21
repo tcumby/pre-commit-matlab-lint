@@ -39,16 +39,14 @@ def find(key: str, default: Optional[T] = None, as_type: Type[T] = str) -> Optio
 
 # Basic information, used by Sphinx
 # Leave language as None unless you have multiple translations
-language = None
+language = 'en'
 project = find("project.name")
 version = find("project.version")
 release = version
 author = find("project.authors")
 # Copyright string (for documentation)
 # It's not clear whether we're supposed to, but we'll add the license
-copyright = find("tool.tyrannosaurus.sources.copyright")
 _license = find("project.license")
-_license_url = find("tool.tyrannosaurus.sources.doc_license_url")
 
 # Load extensions
 # These should be in docs/requirements.txt
