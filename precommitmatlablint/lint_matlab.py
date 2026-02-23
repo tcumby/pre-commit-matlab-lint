@@ -1,7 +1,9 @@
 import argparse
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Optional
+
+from collections.abc import Sequence
 
 from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.linter_handle import LinterOptions, MatlabHandle
@@ -27,7 +29,7 @@ def extract_folder_path_option(path_string: str) -> Optional[Path]:
 
 def validate_matlab(
     matlab_handle: MatlabHandle,
-    filepaths: List[Path],
+    filepaths: list[Path],
     fail_warnings: bool,
     enable_cyc: bool,
     enable_mod_cyc: bool,
@@ -92,7 +94,7 @@ def validate_matlab(
     return return_code
 
 
-def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
+def inspect_linter_result(linter_results: list[dict[str, Any]]) -> ReturnCode:
     """Inspect a given linter result to determine if it indicates a failure.
     Parameters
     ----------
@@ -111,13 +113,13 @@ def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
     return ReturnCode.OK
 
 
-def print_linter_result(filepath: Path, linter_result: List[Dict[str, Any]]):
+def print_linter_result(filepath: Path, linter_result: list[dict[str, Any]]):
     """Print any discovered issues."""
     if len(linter_result) > 0:
         print(f"checkcode found issues in {filepath}:")
         for issue in linter_result:
             line_number: int = issue["line"]
-            column_range: List[int] = issue["column"]
+            column_range: list[int] = issue["column"]
             message: str = issue["message"]
             print(f"\tLine {line_number} (Column [{column_range[0]}-{column_range[1]}]): {message}")
 
@@ -150,7 +152,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default=None,
         help="The release name of MATLAB to use.",
     )
-    parser.add_argument("--treat-warning-as-error", action="store_true", help="Treat all warnings as errors")
+    parser.add_argument(
+        "--treat-warning-as-error", action="store_true", help="Treat all warnings as errors"
+    )
 
     parser.add_argument(
         "--enable-modified-cyclomaticity",
@@ -162,7 +166,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
-    parser.add_argument("--ignore-ok-pragmas", action="store_true", help="Ignore 'ok' checkcode suppression pragmas")
+    parser.add_argument(
+        "--ignore-ok-pragmas", action="store_true", help="Ignore 'ok' checkcode suppression pragmas"
+    )
     parser.add_argument(
         "--checkcode-config-file",
         action="store",
@@ -190,7 +196,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     logger.setLevel(args.logging_level)
 
     logger.info(args)
-    filepaths: List[Path] = []
+    filepaths: list[Path] = []
     if args.filepaths:
         filepaths = [Path(f).resolve() for f in args.filepaths]
         logger.info("Supplied files:")
@@ -222,7 +228,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if ReturnCode.FAIL == return_code or matlab_handle is None:
         logger.error("Unable to find MATLAB")
-        return return_code
+        # We do not want to cause pre-commit/prek to fail if MATLAB is not found.
+        return ReturnCode.OK
     else:
         return validate_matlab(
             matlab_handle,
