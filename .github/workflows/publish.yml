@@ -21,7 +21,7 @@ jobs:
           pip install uv tox
       - name: Test with tox
         run: |
-          tox -v
+          tox -v -e py311
       - name: Build sdists and wheels with uv
         run: |
           uv build
