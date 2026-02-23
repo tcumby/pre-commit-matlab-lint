@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "precommitmatlablint"
-version = "1.0.6"
+version = "1.0.7"
 description = "A pre-commit hook to validate MATLAB code."
 readme = "README.md"
 requires-python = ">=3.9"
