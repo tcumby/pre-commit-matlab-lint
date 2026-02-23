@@ -25,7 +25,7 @@ jobs:
       - name: Build sdists and wheels with uv
         run: |
           uv build
-          uv pip install
+          uv run --with precommitmatlablint --no-project -- python -c "import precommitmatlablint"
       - name: Build the Docker image
         run: |
           docker build .
