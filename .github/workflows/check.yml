@@ -28,4 +28,4 @@ jobs:
       - name: Autobuild with CodeQL
         uses: github/codeql-action/autobuild@v3
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@3
+        uses: github/codeql-action/analyze@v3
