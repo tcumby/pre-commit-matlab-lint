@@ -11,21 +11,22 @@ class LinterRecord:
     line: int = 0
     columns: List[int] = field(default_factory=list)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        column_text = ""
         if len(self.columns) == 2:
-            return f"Line {self.line} (Columns {self.columns[0]}-{self.columns[1]}): {self.id}: {self.message}"
+            column_text = f" (Columns {self.columns[0]}-{self.columns[1]})"
         elif len(self.columns) == 1:
-            return f"Line {self.line} (Column {self.columns[0]}): {self.id}: {self.message}"
-        else:
-            return f"Line {self.line}: {self.id}: {self.message}"
+            column_text = f" (Column {self.columns[0]})"
+
+        return f"Line {self.line}{column_text}: {self.id}: {self.message}"
 
     @classmethod
     def from_mlint(cls, mlint_message: str) -> "LinterRecord":
-        mlint_elements = mlint_message.split(":")
+        mlint_elements = mlint_message.split(":", maxsplit=2)
 
-        line_and_column = mlint_elements[0]
-        id: str = mlint_elements[1].strip()
-        message: str = mlint_elements[2].strip()
+        line_and_column = mlint_elements[0] if len(mlint_elements) > 0 else ""
+        id: str = mlint_elements[1].strip() if len(mlint_elements) > 1 else ""
+        message: str = mlint_elements[2].strip() if len(mlint_elements) > 2 else ""
         match = re.match(
             pattern=r".*L\s*(?P<line>\d+)\s*\(C\s*(?P<column_min>\d+)(\-(?P<column_max>\d+)\))?",
             string=line_and_column,
@@ -36,7 +37,8 @@ class LinterRecord:
             line = int(match.group("line"))
 
             column_min = match.group("column_min")
-            columns.append(int(column_min))
+            if column_min:
+                columns.append(int(column_min))
 
             column_max = match.group("column_max")
             if column_max:
@@ -51,4 +53,4 @@ class LinterReport:
     records: List[LinterRecord] = field(default_factory=list)
 
     def has_records(self) -> bool:
-        return len(self.records) > 0
+        return bool(self.records)

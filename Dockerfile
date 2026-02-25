@@ -1,6 +1,6 @@
 # https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker/54763270#54763270
 
-FROM python:3.13.0a2
+FROM python:3.14
 
 
 # --------------------------------------
@@ -8,10 +8,10 @@ FROM python:3.13.0a2
 
 # See https://github.com/opencontainers/image-spec/blob/master/annotations.md
 LABEL name="pre-commit-matlab-lint"
-LABEL version="1.0.5"
+LABEL version="1.0.7"
 LABEL vendor="ty.cumby"
 LABEL org.opencontainers.image.title="pre-commit-matlab-lint"
-LABEL org.opencontainers.image.version="1.0.5"
+LABEL org.opencontainers.image.version="1.0.7"
 LABEL org.opencontainers.image.url="https://github.com/ty.cumby/pre-commit-matlab-lint"
 LABEL org.opencontainers.image.documentation="https://github.com/ty.cumby/pre-commit-matlab-lint"
 

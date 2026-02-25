@@ -15,11 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: read action options
-        id: read_options
-        run: |
-          json=`cat .github/action-options.json`
-          USE_SLACK=`echo $(jq -r '.use_slack' <<< "$json")`
       - name: "Set up Python ${{ matrix.python-version }}"
         uses: actions/setup-python@v5
         with:
@@ -36,23 +31,20 @@ jobs:
         run: |
           tox -v -e py${{ steps.compute-env-name.outputs.name }}
       - name: Build the Docker image
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         run: |
           docker build .
       - name: Update coveralls
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         run: |
           pip install 'coveralls>=3,<4'
           coveralls --service=github || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update codecov
-        run: |
-          pip install 'codecov>=2.1,<3.0'
-          codecov || true
-      - name: Send Slack notification
-        uses: 8398a7/action-slack@v3
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
         with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,action,workflow
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: always() && steps.read_options.outputs.USE_SLACK=='true'
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
