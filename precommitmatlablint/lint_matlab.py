@@ -7,6 +7,8 @@ from precommitmatlablint.find_matlab import find_matlab
 from precommitmatlablint.linter_handle import LinterOptions, MatlabHandle
 from precommitmatlablint.return_code import ReturnCode
 
+ALLOWED_MCCABE_IDS = {"CABE", "MCABE"}
+
 
 def is_existent_file(potential_file: Path) -> bool:
     """Assess if a Path points to a file that exists."""
@@ -84,11 +86,11 @@ def validate_matlab(
         for report in linter_reports:
             print(report.source_file)
             for record in report.records:
-                if return_code == ReturnCode.OK and record.id not in ["CABE", "MCABE"]:
+                if return_code == ReturnCode.OK and record.id not in ALLOWED_MCCABE_IDS:
                     return_code = ReturnCode.FAIL
                 print(record)
 
-    logger.info(f"MATLAB lint result: {return_code}")
+    logger.info("MATLAB lint result: %s", return_code)
     return return_code
 
 
@@ -103,7 +105,7 @@ def inspect_linter_result(linter_results: List[Dict[str, Any]]) -> ReturnCode:
     ReturnCode
     """
     # Let's not fail if any of the linter McCabe cyclomaticity IDs are present.
-    allowed_ids = {"CABE", "MCABE"}
+    allowed_ids = ALLOWED_MCCABE_IDS
     for result in linter_results:
         if result["id"] not in allowed_ids:
             return ReturnCode.FAIL
@@ -150,7 +152,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default=None,
         help="The release name of MATLAB to use.",
     )
-    parser.add_argument("--treat-warning-as-error", action="store_true", help="Treat all warnings as errors")
+    parser.add_argument(
+        "--treat-warning-as-error", action="store_true", help="Treat all warnings as errors"
+    )
 
     parser.add_argument(
         "--enable-modified-cyclomaticity",
@@ -162,7 +166,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Enable the display of McCabe cyclomaticity calculation complexity.",
     )
-    parser.add_argument("--ignore-ok-pragmas", action="store_true", help="Ignore 'ok' checkcode suppression pragmas")
+    parser.add_argument(
+        "--ignore-ok-pragmas", action="store_true", help="Ignore 'ok' checkcode suppression pragmas"
+    )
     parser.add_argument(
         "--checkcode-config-file",
         action="store",

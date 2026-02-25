@@ -6,7 +6,7 @@ import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional, Protocol, List, Tuple, Dict
+from typing import Optional, Protocol, List, Tuple, Dict, Any
 
 import yaml
 from defusedxml import ElementTree as ElementTree
@@ -27,8 +27,7 @@ class LinterOptions:
 
 
 class Linter(Protocol):
-    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
-        pass
+    def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]: ...
 
 
 @dataclass(frozen=True)
@@ -41,13 +40,11 @@ class MLintHandle(Linter):
     def lint(self, filepaths: List[Path], options: LinterOptions) -> List[LinterReport]:
         linter_reports: List[LinterReport]
 
-        command = [str(self.exe_path)]
         arguments = MLintHandle.construct_command_arguments(
             filepaths=filepaths,
             options=options,
         )
-
-        command = command + arguments
+        command = [str(self.exe_path), *arguments]
 
         completed_process = subprocess.run(command, capture_output=True, text=True)
 
@@ -70,21 +67,28 @@ class MLintHandle(Linter):
                     this_report.records.append(LinterRecord.from_mlint(mlint_message=line))
                 linter_reports.append(this_report)
             elif len(file_list) > 1:
-                boundary_indeces = [idx for (idx, line) in enumerate(lines) if line.startswith("===")]
+                boundary_indices = [
+                    idx for (idx, line) in enumerate(lines) if line.startswith("===")
+                ]
 
-                for idx, boundary_index in enumerate(boundary_indeces):
+                for idx, boundary_index in enumerate(boundary_indices):
                     # Each boundary line is of the form '============ <file path> ============'
                     file_path: str = lines[boundary_index].strip("=").strip()
                     this_report = LinterReport(source_file=Path(file_path))
 
                     start_index = boundary_index + 1
-                    end_index = len(lines) if idx == len(boundary_indeces) - 1 else boundary_indeces[idx + 1]
+                    end_index = (
+                        len(lines)
+                        if idx == len(boundary_indices) - 1
+                        else boundary_indices[idx + 1]
+                    )
 
-                    has_records = (end_index - start_index + 1) > 0
-                    if has_records:
-                        # There is linter output for this file
-                        for line_index in range(start_index, end_index):
-                            this_report.records.append(LinterRecord.from_mlint(mlint_message=lines[line_index]))
+                    records = [
+                        LinterRecord.from_mlint(mlint_message=line)
+                        for line in lines[start_index:end_index]
+                        if line
+                    ]
+                    this_report.records.extend(records)
 
                     linter_reports.append(this_report)
         else:
@@ -95,10 +99,12 @@ class MLintHandle(Linter):
         return linter_reports
 
     @classmethod
-    def construct_command_arguments(cls, filepaths: List[Path], options: LinterOptions) -> List[str]:
+    def construct_command_arguments(
+        cls, filepaths: List[Path], options: LinterOptions
+    ) -> List[str]:
 
         level_option = "-m0" if options.fail_warnings else "-m2"
-        arguments: List = [level_option, "-id"]
+        arguments: List[str] = [level_option, "-id"]
         if options.enable_cyc:
             arguments.append("-cyc")
 
@@ -131,11 +137,15 @@ class MatlabHandle(Linter):
     def __post_init__(self):
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
-            self.version, self.release = MatlabHandle.read_version_info(self.get_version_info_file())
+            self.version, self.release = MatlabHandle.read_version_info(
+                self.get_version_info_file()
+            )
 
         if len(self.version) == 0 and len(self.release) == 0:
             # Try to get the version and release name from a product info XML file at <MATLAB home>/appdata/products
-            self.version, self.release = MatlabHandle.read_product_info(self.get_product_info_file())
+            self.version, self.release = MatlabHandle.read_product_info(
+                self.get_product_info_file()
+            )
 
         if len(self.version) == 0 and len(self.release) == 0:
             # query_version() takes a fair bit of time, so skip it if the `version` and `release` fields are populated
@@ -149,7 +159,9 @@ class MatlabHandle(Linter):
         products_folder = self.home_path / "appdata" / "products"
         arch: str = MatlabHandle.get_architecture_folder_name()
         files = [
-            f for f in products_folder.glob("MATLAB*.xml") if re.match(rf"MATLAB\s*\d+\.\d+\s*{arch}.*.xml", f.name)
+            f
+            for f in products_folder.glob("MATLAB*.xml")
+            if re.match(rf"MATLAB\s*\d+\.\d+\s*{arch}.*.xml", f.name)
         ]
         if len(files) > 0:
             info_file = files[0]
@@ -292,29 +304,22 @@ class MatlabHandle(Linter):
             options.checkcode_config_file,
         )
 
-        print(f"Validating MATLAB files using {str(self.exe_path)}")
+        logger = logging.getLogger(__name__)
+        logger.info("Validating MATLAB files using %s", self.exe_path)
         stdout, return_code = self.run(matlab_script)
 
         checkcode_data = json.loads(stdout)
 
         if len(filepaths) == 1:
             this_report = LinterReport(source_file=filepaths[0])
-            for issue in checkcode_data:
-                this_record = LinterRecord(
-                    id=issue["id"], line=issue["line"], columns=issue["column"], message=issue["message"]
-                )
-                this_report.records.append(this_record)
+            this_report.records.extend(self._records_from_issues(checkcode_data))
 
             linter_reports.append(this_report)
         else:
             for index, this_file in enumerate(filepaths):
                 this_report = LinterReport(source_file=this_file)
                 this_linter_results = checkcode_data[index]
-                for issue in this_linter_results:
-                    this_record = LinterRecord(
-                        id=issue["id"], line=issue["line"], columns=issue["column"], message=issue["message"]
-                    )
-                    this_report.records.append(this_record)
+                this_report.records.extend(self._records_from_issues(this_linter_results))
 
                 linter_reports.append(this_report)
 
@@ -330,6 +335,18 @@ class MatlabHandle(Linter):
             release = match.group("release")
         return release, version
 
+    @staticmethod
+    def _records_from_issues(issues: List[Dict[str, Any]]) -> List[LinterRecord]:
+        return [
+            LinterRecord(
+                id=issue["id"],
+                line=issue["line"],
+                columns=issue["column"],
+                message=issue["message"],
+            )
+            for issue in issues
+        ]
+
     def to_dict(self) -> Dict[str, str]:
         output: Dict[str, str] = asdict(self)
         for _, (key, value) in enumerate(output.items()):
@@ -341,11 +358,18 @@ class MatlabHandle(Linter):
         if self.is_valid():
             version_info_file: Path = self.get_version_info_file()
             if version_info_file.exists():
-                self.version, self.release = MatlabHandle.read_version_info(self.get_version_info_file())
+                self.version, self.release = MatlabHandle.read_version_info(
+                    self.get_version_info_file()
+                )
 
     @classmethod
     def construct_base_exe_path(cls, home_path: Path) -> Path:
-        return home_path / "bin" / MatlabHandle.get_architecture_folder_name() / MatlabHandle.get_matlab_exe_name()
+        return (
+            home_path
+            / "bin"
+            / MatlabHandle.get_architecture_folder_name()
+            / MatlabHandle.get_matlab_exe_name()
+        )
 
     @classmethod
     def construct_exe_path(cls, home_path: Path) -> Path:
@@ -359,8 +383,9 @@ class MatlabHandle(Linter):
         if version_info_path.exists():
             tree = ElementTree.parse(version_info_path)
             root = tree.getroot()
-            version = root.find("version").text
-            release = root.find("release").text
+            if root is not None:
+                version = root.findtext("version", default="")
+                release = root.findtext("release", default="")
 
         return version, release
 
@@ -373,8 +398,9 @@ class MatlabHandle(Linter):
             tree = ElementTree.parse(product_info_path)
             root = tree.getroot()
 
-            version = root.find("productVersion").text
-            release = root.find("releaseFamily").text
+            if root is not None:
+                version = root.findtext("productVersion", default="")
+                release = root.findtext("releaseFamily", default="")
 
         return version, release
 
@@ -464,7 +490,9 @@ class MatlabHandleList:
                 self._logger.info(f"Found new MATLAB installation at {home_path}")
                 exe_path = MatlabHandle.construct_exe_path(home_path)
                 base_exe_path = MatlabHandle.construct_base_exe_path(home_path)
-                handle = MatlabHandle(home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path)
+                handle = MatlabHandle(
+                    home_path=home_path, exe_path=exe_path, base_exe_path=base_exe_path
+                )
                 self.append(handle)
 
     def prune(self) -> None:

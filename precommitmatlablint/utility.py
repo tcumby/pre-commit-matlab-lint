@@ -36,10 +36,10 @@ def construct_matlab_script(
     str
         The MATLAB script to run on the MATLAB instance
     """
-    file_list = [f"'{str(f)}'" for f in filepaths]
+    file_list = [f"'{f}'" for f in filepaths]
 
     level_option = "'-m0'" if fail_warnings else "'-m2'"
-    command: List = [level_option, "'-id'", "'-struct'"]
+    command: List[str] = [level_option, "'-id'", "'-struct'"]
     if enable_cyc:
         command.append("'-cyc'")
 
@@ -54,6 +54,6 @@ def construct_matlab_script(
     elif checkcode_config_file:
         command.append(f"'-config={str(checkcode_config_file)}'")
 
-    command = command + file_list
-    command_string: str = ", ".join(command)
+    command.extend(file_list)
+    command_string = ", ".join(command)
     return f"clc;disp(jsonencode(checkcode({command_string})));quit;"
