@@ -33,7 +33,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /code
-COPY uv.lock pyproject.toml /code/
+COPY uv.lock pyproject.toml README.md /code/
 
 # Install with uv
 RUN uv sync --frozen --no-dev
