@@ -35,11 +35,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /code
 COPY uv.lock pyproject.toml README.md /code/
 
-# Install with uv
-RUN uv sync --frozen --no-dev
-
 # Copy everything (code) to our workdir
 COPY . /code
+
+# Install with uv
+RUN uv sync --frozen --no-dev
 
 # Install the project
 RUN uv pip install .
