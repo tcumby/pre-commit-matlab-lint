@@ -23,8 +23,10 @@ def extract_file_path_option(file_path_string: str) -> Optional[Path]:
     return potential_file if is_existent_file(potential_file) else None
 
 
-def extract_folder_path_option(path_string: str) -> Optional[Path]:
+def extract_folder_path_option(path_string: Optional[str]) -> Optional[Path]:
     """Return a folder Path from a supplied string, or None if the supplied string does not map to an existing folder."""
+    if path_string is None:
+        return None
     potential_folder = Path(path_string).absolute()
     return potential_folder if potential_folder.exists() and potential_folder.is_dir() else None
 
@@ -84,7 +86,9 @@ def validate_matlab(
         linter_reports = matlab_handle.lint(filepaths=filepaths, options=options)
 
     if len(linter_reports) > 0:
-        print("mlint found issues:")
+        all_records = [record for report in linter_reports for record in report.records]
+        if len(all_records) > 0:
+            print("mlint found issues:")
         for report in linter_reports:
             print(report.source_file)
             for record in report.records:
@@ -135,7 +139,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "--matlab-home-path",
         action="store",
         type=str,
-        default="",
+        default=None,
         help="Folder path to the MATLAB home directory.",
     )
 
