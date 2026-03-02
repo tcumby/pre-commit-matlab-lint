@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "precommitmatlablint"
-version = "1.0.8"
+version = "1.0.9"
 description = "A pre-commit hook to validate MATLAB code."
 readme = "README.md"
 requires-python = ">=3.9"
