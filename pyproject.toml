@@ -1,10 +1,11 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools==82.0.0"]
+build-backend = "setuptools.build_meta"
+
 
 [project]
 name = "precommitmatlablint"
-version = "1.0.7"
+version = "1.0.8"
 description = "A pre-commit hook to validate MATLAB code."
 readme = "README.md"
 requires-python = ">=3.9"
