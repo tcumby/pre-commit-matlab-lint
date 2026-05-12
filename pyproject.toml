@@ -1,11 +1,11 @@
 [build-system]
-requires = ["setuptools==82.0.0"]
+requires = ["setuptools>=82.0.0"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
 name = "precommitmatlablint"
-version = "1.0.9"
+version = "1.0.11"
 description = "A pre-commit hook to validate MATLAB code."
 readme = "README.md"
 requires-python = ">=3.9"
